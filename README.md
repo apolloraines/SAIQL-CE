@@ -43,7 +43,7 @@ SAIQL provides a **semantic firewall** between AI and your data:
 - **Symbolic Syntax**: Compact, unambiguous format that AI models can reliably generate
 - **Semantic Validation**: Queries are validated against schema and security rules before execution
 - **Database Agnostic**: AI doesn't need to know if it's talking to PostgreSQL or SQLite
-- **Grounded Responses**: Query results can be validated and cited (Full Edition)
+- **Grounded Responses**: Query results can be validated and cited (Enterprise)
 
 Example — an AI agent querying user data:
 ```
@@ -213,14 +213,14 @@ SAIQL is licensed under the Open Lore License (OLL). See [LICENSE.md](LICENSE.md
 
 ---
 
-## Community Edition vs Full Edition
+## Community Edition vs Enterprise Cloud
 
 <table>
 <thead>
 <tr>
 <th width="18%">Feature</th>
 <th width="41%">Community Edition</th>
-<th width="41%">Full Edition</th>
+<th width="41%">Enterprise Cloud</th>
 </tr>
 </thead>
 <tbody>
@@ -272,7 +272,7 @@ SAIQL is licensed under the Open Lore License (OLL). See [LICENSE.md](LICENSE.md
 </tbody>
 </table>
 
-### Full Edition Highlights (Proprietary)
+### Enterprise Highlights (Proprietary)
 
 **QIPI** *(proprietary)* — High-speed indexing that beats B-trees on 4/5 operations. 10x faster on hot data.
 
