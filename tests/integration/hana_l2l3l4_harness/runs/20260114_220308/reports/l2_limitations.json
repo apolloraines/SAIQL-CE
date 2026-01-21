@@ -1,0 +1,13 @@
+{
+  "level": "L2",
+  "object_type": "views",
+  "total_count": 4,
+  "supported_types": [
+    "SQL_VIEW"
+  ],
+  "unsupported_types": [
+    "Calculation View",
+    "HDI artifact"
+  ],
+  "notes": "Only catalog-based SQL views extracted"
+}

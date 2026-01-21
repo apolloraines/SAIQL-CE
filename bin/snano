@@ -1,0 +1,37 @@
+#!/bin/bash
+# Symbolic nano - translates symbols to human-readable for editing
+
+if [ -z "$1" ]; then
+    echo "Usage: snano <file>"
+    exit 1
+fi
+
+if [ ! -f "$1" ]; then
+    echo "Error: File '$1' not found"
+    exit 1
+fi
+
+# Create temp file
+TMPFILE=$(mktemp)
+
+# Convert symbols to human-readable using scat
+if command -v scat >/dev/null 2>&1; then
+    scat "$1" > "$TMPFILE" 2>/dev/null || cat "$1" > "$TMPFILE"
+else
+    # Fallback to direct copy if scat not available
+    cat "$1" > "$TMPFILE"
+fi
+
+# Open in nano for editing
+nano "$TMPFILE"
+
+# Check if file was modified
+if [ -f "$TMPFILE" ]; then
+    # TODO: Convert back to symbolic format before saving
+    # For now, just save as-is (user should be careful)
+    cat "$TMPFILE" > "$1"
+    echo "File saved: $1"
+fi
+
+# Clean up
+rm -f "$TMPFILE"

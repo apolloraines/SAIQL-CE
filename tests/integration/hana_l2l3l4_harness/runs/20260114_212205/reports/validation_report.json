@@ -1,0 +1,34 @@
+{
+  "run_id": "20260114_212205",
+  "timestamp": "2026-01-14T21:22:06.683263",
+  "l2_views": {
+    "status": "PASS",
+    "count": 4,
+    "names": [
+      "active_customers",
+      "customer_summary",
+      "high_balance_active",
+      "order_summary"
+    ]
+  },
+  "l3_routines": {
+    "status": "PASS",
+    "procedure_count": 5,
+    "function_count": 2,
+    "names": [
+      "aflpm_creator",
+      "aflpm_eraser",
+      "aflpm_generator",
+      "get_customer_count",
+      "update_customer_status",
+      "calculate_discount_price",
+      "get_customer_balance"
+    ]
+  },
+  "l4_triggers": {
+    "status": "PASS",
+    "total": 3,
+    "supported": 0,
+    "unsupported": 3
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "level": "L4",
+  "object_type": "triggers",
+  "total_count": 0,
+  "supported": {
+    "count": 0,
+    "names": []
+  },
+  "unsupported": {
+    "count": 0,
+    "triggers": []
+  },
+  "limitations": [
+    "Only BEFORE INSERT/UPDATE with simple normalization supported",
+    "AFTER triggers NOT supported",
+    "Triggers with DML operations NOT supported"
+  ]
+}

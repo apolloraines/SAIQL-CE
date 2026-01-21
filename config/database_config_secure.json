@@ -1,0 +1,188 @@
+{
+  "default_backend": "sqlite",
+  "backends": {
+    "sqlite": {
+      "type": "sqlite",
+      "path": "data/lore_store.db",
+      "timeout": 30,
+      "journal_mode": "WAL",
+      "synchronous": "NORMAL",
+      "cache_size": 2000,
+      "temp_store": "memory"
+    },
+    "postgresql": {
+      "type": "postgresql",
+      "host": "localhost",
+      "port": 5432,
+      "database": "saiql",
+      "user": "saiql_user",
+      "password": "",
+      "min_connections": 2,
+      "max_connections": 20,
+      "connection_timeout": 30,
+      "statement_timeout": 300,
+      "idle_in_transaction_timeout": 60,
+      "ssl_mode": "require",
+      "ssl_verify": true,
+      "application_name": "SAIQL-Charlie",
+      "search_path": "public",
+      "max_retries": 3,
+      "retry_delay": 1.0
+    },
+    "postgresql_production": {
+      "type": "postgresql",
+      "host": "${PG_HOST}",
+      "port": "${PG_PORT:5432}",
+      "database": "${PG_DATABASE}",
+      "user": "${PG_USER}",
+      "password": "${PG_PASSWORD}",
+      "min_connections": 5,
+      "max_connections": 50,
+      "connection_timeout": 10,
+      "statement_timeout": 600,
+      "idle_in_transaction_timeout": 120,
+      "ssl_mode": "require",
+      "ssl_verify": true,
+      "ssl_cert": "${PG_SSL_CERT}",
+      "ssl_key": "${PG_SSL_KEY}",
+      "ssl_ca": "${PG_SSL_CA}",
+      "ssl_crl": "${PG_SSL_CRL}",
+      "application_name": "SAIQL-Charlie-Production",
+      "search_path": "saiql,public",
+      "max_retries": 5,
+      "retry_delay": 2.0,
+      "connection_encryption": true
+    },
+    "mysql": {
+      "type": "mysql",
+      "host": "localhost",
+      "port": 3306,
+      "database": "saiql",
+      "user": "saiql_user",
+      "password": "",
+      "charset": "utf8mb4",
+      "use_unicode": true,
+      "autocommit": false,
+      "pool_size": 20,
+      "pool_reset_session": true,
+      "connection_timeout": 30,
+      "max_retries": 3,
+      "ssl": {
+        "enabled": true,
+        "verify_cert": true,
+        "verify_identity": true,
+        "ca": "${MYSQL_SSL_CA}",
+        "cert": "${MYSQL_SSL_CERT}",
+        "key": "${MYSQL_SSL_KEY}"
+      }
+    },
+    "mysql_production": {
+      "type": "mysql",
+      "host": "${MYSQL_HOST}",
+      "port": "${MYSQL_PORT:3306}",
+      "database": "${MYSQL_DATABASE}",
+      "user": "${MYSQL_USER}",
+      "password": "${MYSQL_PASSWORD}",
+      "charset": "utf8mb4",
+      "use_unicode": true,
+      "autocommit": false,
+      "pool_size": 50,
+      "pool_reset_session": true,
+      "connection_timeout": 10,
+      "max_retries": 5,
+      "ssl": {
+        "enabled": true,
+        "verify_cert": true,
+        "verify_identity": true,
+        "ca": "${MYSQL_SSL_CA}",
+        "cert": "${MYSQL_SSL_CERT}",
+        "key": "${MYSQL_SSL_KEY}",
+        "cipher": "ECDHE-RSA-AES128-GCM-SHA256"
+      }
+    }
+  },
+  "connection_pools": {
+    "enable_pooling": true,
+    "pool_pre_ping": true,
+    "pool_recycle": 3600,
+    "pool_timeout": 30,
+    "max_overflow": 10,
+    "pool_reset_on_return": "commit"
+  },
+  "query_settings": {
+    "default_timeout": 300,
+    "max_query_length": 1048576,
+    "enable_query_cache": true,
+    "query_cache_size": 1000,
+    "prepared_statement_cache_size": 100,
+    "max_execution_time": 600,
+    "enable_query_logging": true
+  },
+  "monitoring": {
+    "enable_metrics": true,
+    "slow_query_threshold": 5.0,
+    "log_queries": false,
+    "log_slow_queries": true,
+    "track_connection_stats": true,
+    "enable_performance_schema": true,
+    "connection_health_check_interval": 30
+  },
+  "security": {
+    "enable_ssl": true,
+    "verify_ssl_cert": true,
+    "require_ssl": true,
+    "encrypt_passwords": true,
+    "password_encryption_key": "${DB_ENCRYPTION_KEY}",
+    "allowed_schemas": ["public", "saiql"],
+    "restricted_functions": [
+      "pg_read_file", "pg_write_file", "copy", "pg_ls_dir",
+      "pg_read_binary_file", "pg_stat_file", "load_file",
+      "into_outfile", "into_dumpfile"
+    ],
+    "enable_row_level_security": true,
+    "audit_logging": true,
+    "connection_encryption": "required",
+    "min_tls_version": "1.2",
+    "cipher_suites": [
+      "ECDHE-RSA-AES256-GCM-SHA384",
+      "ECDHE-RSA-AES128-GCM-SHA256",
+      "ECDHE-RSA-AES256-SHA384",
+      "ECDHE-RSA-AES128-SHA256"
+    ]
+  },
+  "backup": {
+    "enable_point_in_time_recovery": true,
+    "backup_encryption": true,
+    "backup_compression": true,
+    "retention_days": 30
+  },
+  "compliance": {
+    "enable_gdpr_mode": false,
+    "enable_hipaa_mode": false,
+    "enable_pci_mode": false,
+    "data_classification": "internal",
+    "audit_retention_days": 365
+  },
+  "environment_overrides": {
+    "development": {
+      "ssl_mode": "prefer",
+      "verify_ssl_cert": false,
+      "log_queries": true,
+      "connection_timeout": 60
+    },
+    "testing": {
+      "ssl_mode": "disable",
+      "verify_ssl_cert": false,
+      "enable_query_cache": false,
+      "log_queries": true
+    },
+    "production": {
+      "ssl_mode": "require",
+      "verify_ssl_cert": true,
+      "require_ssl": true,
+      "log_queries": false,
+      "enable_performance_schema": true,
+      "audit_logging": true
+    }
+  }
+}

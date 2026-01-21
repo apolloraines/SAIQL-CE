@@ -1,0 +1,16 @@
+{
+  "level": "L3",
+  "object_type": "routines",
+  "total_count": 4,
+  "procedures": 2,
+  "functions": 2,
+  "supported_types": [
+    "SQLSCRIPT procedure",
+    "SQLSCRIPT function"
+  ],
+  "unsupported_types": [
+    "AMDP",
+    "Native procedures"
+  ],
+  "notes": "Only SQLScript routines extracted"
+}

@@ -1,0 +1,45 @@
+# Prometheus Configuration for SAIQL-Charlie
+# ==========================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # SAIQL-Charlie main service
+  - job_name: 'saiql-charlie'
+    static_configs:
+      - targets: ['saiql-charlie:8001']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # PostgreSQL metrics (requires postgres_exporter)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Redis metrics (requires redis_exporter)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # ChromaDB metrics
+  - job_name: 'chromadb'
+    static_configs:
+      - targets: ['chromadb:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      -‍‍‍‌‍‍‌‌​‌‍‌‍‌‌‍‌​‌‍‌‍‌‌‌‌​‍‍‌‍‍‍‍‌​‍‍‌‍‍‍‍‍​‌‍‌‍‌‍‍‌​‍‍‌‌‍‍‍‌​‌‍‍‌‍‌‍‍​‌‌‌‌‌‌‌‌​‍‌‌‌‌‍‌‌ targets: ['localhost:9090']

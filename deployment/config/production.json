@@ -1,0 +1,78 @@
+{
+  "saiql": {
+    "version": "5.0.0",
+    "environment": "production",
+    "debug": false,
+    "log_level": "INFO"
+  },
+  "server": {
+    "host": "0.0.0.0",
+    "port": 5432,
+    "workers": 4,
+    "max_connections": 100,
+    "connection_timeout": 30,
+    "keep_alive": true
+  },
+  "database": {
+    "data_directory": "/app/data",
+    "backup_directory": "/app/backups",
+    "transaction_log_directory": "/app/logs/transactions",
+    "max_memory_usage_mb": 512,
+    "cache_size_mb": 128,
+    "enable_wal": true,
+    "checkpoint_interval": 300
+  },
+  "performance": {
+    "query_timeout": 30,
+    "transaction_timeout": 60,
+    "max_query_complexity": 1000,
+    "enable_query_cache": true,
+    "cache_ttl": 3600,
+    "enable_monitoring": true,
+    "metrics_collection_interval": 10
+  },
+  "security": {
+    "enable_authentication": true,
+    "enable_encryption": true,
+    "jwt_expiration": 3600,
+    "max_failed_logins": 5,
+    "lockout_duration": 300,
+    "enable_audit_logging": true,
+    "allowed_hosts": [
+      "*"
+    ],
+    "cors_origins": [
+      "http://localhost:3000",
+      "https://nova.local"
+    ]
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "json",
+    "file_rotation_size": "100MB",
+    "file_retention_days": 30,
+    "enable_console": true,
+    "enable_file": true,
+    "log_directory": "/app/logs"
+  },
+  "monitoring": {
+    "enable_prometheus": true,
+    "prometheus_port": 8080,
+    "enable_health_checks": true,
+    "health_check_interval": 30,
+    "enable_performance_profiling": true
+  },
+  "backup": {
+    "enable_automatic_backup": true,
+    "backup_interval": 3600,
+    "retention_days": 7,
+    "compression": true,
+    "backup_format": "saiql_native"
+  },
+  "clustering": {
+    "enable_clustering": false,
+    "node_id": "saiql-node-1",
+    "cluster_nodes": [],
+    "replication_factor": 1
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema": "SAIQL_L2L3L4_20260114_213811",
+  "l2_views": {
+    "count": 0,
+    "names": []
+  },
+  "l3_routines": {
+    "procedures": 0,
+    "functions": 0,
+    "names": []
+  },
+  "l4_triggers": {
+    "count": 0,
+    "supported": 0,
+    "unsupported": 0,
+    "names": []
+  }
+}

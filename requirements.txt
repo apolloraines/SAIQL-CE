@@ -1,0 +1,52 @@
+# SAIQL Core Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core database functionality
+psutil>=5.9.0
+numpy>=1.24.0
+pyyaml>=6.0
+
+# Carl Copilot dependencies
+llama-cpp-python>=0.2.0
+torch>=2.0.0
+sentence-transformers>=2.2.0
+
+# Optional: Training system
+transformers>=4.30.0
+peft>=0.4.0
+datasets>=2.12.0
+accelerate>=0.20.0
+bitsandbytes>=0.41.0
+
+# Optional: Enhanced UI
+rich>=13.0.0
+
+# Development
+pytest>=7.0.0
+black>=23.0.0
+flake8>=6.0.0
+pymssql
+SQLAlchemy>=2.0.0
+psycopg2-binary
+mysql-connector-python
+PyMySQL
+cryptography
+oracledb>=2.0.0
+duckdb-engine
+duckdb
+
+# Document Extraction Layer (DEL) - Atlas non-text format support
+pypdf>=4.0.0
+pdfplumber>=0.10.0
+python-docx>=1.0.0
+python-pptx>=0.6.23
+openpyxl>=3.1.0
+striprtf>=0.0.26
+
+# Phase 2: OCR Support (Gate A8) - Local only, requires tesseract-ocr system package
+pytesseract>=0.3.10
+pdf2image>=1.16.0
+Pillow>=10.0.0
+
+# Phase 2: Vision Support (Gate A9) - Local only, uses CLIP via sentence-transformers
+# Note: sentence-transformers already included above for Carl Copilot

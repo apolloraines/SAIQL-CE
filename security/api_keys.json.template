@@ -1,0 +1,18 @@
+[
+  {
+    "key_id": "TEMPLATE_ADMIN_KEY_ID",
+    "key_hash": "TEMPLATE_ADMIN_KEY_HASH",
+    "user_id": "admin",
+    "name": "Default Admin Key",
+    "roles": [
+      "admin"
+    ],
+    "created_at": "TEMPLATE_CREATION_DATE",
+    "expires_at": "TEMPLATE_EXPIRY_DATE",
+    "last_used": null,
+    "usage_count": 0,
+    "is_active": true,
+    "rate_limit": null,
+    "allowed_ips": []
+  }
+]

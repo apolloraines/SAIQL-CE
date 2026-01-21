@@ -1,0 +1,96 @@
+# SAIQL - Legal Notices
+
+## Copyright
+
+Copyright © 2025 Apollo Raines. All rights reserved.
+
+## License
+
+SAIQL is licensed under the **Open Lore License v1.1** ("Baby Bird Edition").
+
+See [LICENSE.md](LICENSE.md) for full terms.
+
+### Quick Summary
+
+- ✅ **FREE** for individuals, non-profits, and businesses under $6M revenue
+- ⚠️ **GRACE PERIOD** for $6M-$10M (notify us, 12 months to license)
+- 💼 **COMMERCIAL LICENSE** required for $10M+ or hosted services
+- 📢 **ATTRIBUTION** required for public implementations
+
+## Attribution
+
+If you use SAIQL in a public-facing application, please include attribution:
+
+**Choose one:**
+- "Powered by SAIQL"
+- "Built with SAIQL"  
+- "Database: SAIQL (saiql.ai)"
+
+**Where to place:**
+- Application footer or about page
+- API response header: `X-Powered-By: SAIQL`
+- Documentation or README
+
+## Trademarks
+
+**SAIQL™** and **LoreTokens™** are trademarks of Apollo Raines.
+
+You may use these trademarks in attribution as required by the license. Commercial use of these trademarks requires permission.
+
+## Patents
+
+This software implements concepts described in:
+
+**USPTO Provisional Patent Application**  
+*System and Method for Hierarchical, Persistent, and Contextual AI Memory and Lore Management*
+
+Use of SAIQL software under the Open Lore License includes a patent license for the covered claims.
+
+## Third-Party Components
+
+SAIQL includes or depends on software under various open source licenses:
+
+- **Python** - PSF License
+- **NumPy** - BSD License
+- **PyTorch** - BSD-style License
+- **llama.cpp** - MIT License
+- **Qwen** - Apache 2.0 License
+
+See individual component licenses in the `venv/lib/` directory.
+
+## Model Weights
+
+**Copilot Carl** (Copilot_Carl.gguf) is based on:
+- **Qwen2.5-Coder-0.5B-Instruct** - Apache 2.0 License
+- Fine-tuned by Apollo Raines
+- Distributed under Apache 2.0 License
+
+## Commercial Licensing
+
+For commercial licensing inquiries, see [COMMERCIAL.md](COMMERCIAL.md) or contact:
+
+**Apollo Raines**  
+apollo@saiql.ai
+
+## Open Source Acknowledgments
+
+SAIQL builds on the incredible work of the open source community.
+
+Special thanks to:
+- The Python Software Foundation
+- PyTorch contributors
+- Georgi Gerganov (llama.cpp)
+- Qwen Team (Alibaba Cloud)
+- All SAIQL contributors
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/yourusername/SAIQL/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/SAIQL/discussions)
+- **Email**: apollo@saiql.ai
+- **Website**: https://saiql.ai
+
+---
+
+**Open Lore License v1.1**  
+*Build boldly. Fly fairly.*

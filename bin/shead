@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+import sys
+
+SYMBOLS = {
+    'BTC-USD': '₿', 'ETH-USD': 'Ξ', 'SOL-USD': '◎', 'XRP-USD': '✕',
+    'DOGE-USD': 'Ð', 'ADA-USD': '₳', 'AVAX-USD': '△', 'DOT-USD': '●',
+    'MATIC-USD': '▽', 'LINK-USD': '⬡', 'ACTIVE': '✓', 'INACTIVE': '✗',
+    'symbol': '§', 'timestamp': '⏱', 'open': '↗', 'high': '⤊',
+    'low': '⤋', 'close': '↘', 'volume': '▣', 'granularity': '⌘'
+}
+
+def to_human(line):
+    for sym, meaning in SYMBOLS.items():
+        line = line.replace(sym, meaning)
+    return line
+
+# Parse arguments
+n = 10  # default
+file_path = None
+
+# Handle arguments: shead N file or shead file
+for arg in sys.argv[1:]:
+    if arg.isdigit():
+        n = int(arg)
+    elif not arg.startswith('-'):
+        file_path = arg
+
+# Read from file or stdin
+if file_path:
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            for i, line in enumerate(f):
+                if i >= n: break
+                print(to_human(line.rstrip()))
+    except FileNotFoundError:
+        print(f"Error: File '{file_path}' not found", file=sys.stderr)
+        sys.exit(1)
+else:
+    # Read from stdin
+    for i, line in enumerate(sys.stdin):
+        if i >= n: break
+        print(to_human(line.rstrip()))

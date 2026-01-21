@@ -1,0 +1,32 @@
+{
+  "schema": "SAIQL_L2L3L4_20260114_215502",
+  "l2_views": {
+    "count": 4,
+    "names": [
+      "active_customers",
+      "customer_summary",
+      "high_balance_active",
+      "order_summary"
+    ]
+  },
+  "l3_routines": {
+    "procedures": 2,
+    "functions": 2,
+    "names": [
+      "get_customer_count",
+      "update_customer_status",
+      "calculate_discount_price",
+      "get_customer_balance"
+    ]
+  },
+  "l4_triggers": {
+    "count": 3,
+    "supported": 2,
+    "unsupported": 1,
+    "names": [
+      "trg_order_audit",
+      "trg_trim_email",
+      "trg_upper_lastname"
+    ]
+  }
+}

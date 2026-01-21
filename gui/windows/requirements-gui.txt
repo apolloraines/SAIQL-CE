@@ -1,0 +1,26 @@
+# SAIQL-Charlie Windows GUI Requirements
+# ====================================
+# Required packages for building and running the Windows GUI application
+
+# Core GUI framework (included with Python)
+# tkinter - comes with Python standard library
+
+# Database adapters
+psycopg2-binary>=2.9.0     # PostgreSQL adapter
+mysql-connector-python>=8.0.0  # MySQL adapter
+
+# Build tools
+pyinstaller>=5.0.0         # For creating .exe files
+upx>=3.96                  # Executable compression (optional)
+
+# Core Python libraries (usually included)
+# json, threading, datetime, pathlib, typing, etc. are standard library
+
+# Optional dependencies for enhanced functionality
+requests>=2.25.0           # For web-based features
+Pillow>=8.0.0             # For image handling in GUI
+
+# Development tools (optional)
+pytest>=6.0.0             # For testing
+black>=21.0.0             # Code formatting
+flake8>=3.8.0             #‍‍‍‌‍‍‌‌​‌‍‌‍‌‌‍‌​‌‍‌‍‌‌‌‌​‍‍‌‍‍‍‍‌​‍‍‌‍‍‍‍‍​‌‍‌‍‌‍‍‌​‍‍‌‌‍‍‍‌​‌‍‍‌‍‌‍‍​‌‌‌‌‌‌‌‌​‍‌‌‌‌‍‌‌ Code linting

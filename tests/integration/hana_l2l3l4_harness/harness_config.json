@@ -1,0 +1,171 @@
+{
+  "harness": {
+    "name": "HANA L2/L3/L4 Integration Harness",
+    "version": "1.2.0",
+    "phase": "HANA-L2L3L4"
+  },
+  "schema_strategy": {
+    "mode": "fresh_schema_per_run",
+    "schema_prefix": "SAIQL_L2L3L4_",
+    "teardown": "drop_schema_cascade",
+    "notes": "Each run creates schema SAIQL_L2L3L4_<run_id>. Schema is dropped after run completes."
+  },
+  "connection": {
+    "host": "${HANA_HOST:-localhost}",
+    "port": "${HANA_PORT:-39017}",
+    "database": "${HANA_DATABASE:-HXE}",
+    "user": "${HANA_USER:-SAIQL_L2L3L4_TEST}",
+    "password": "${HANA_PASSWORD}",
+    "encrypt": false,
+    "dedicated_user_requirement": {
+      "enforced": true,
+      "notes": "Per rules_SAP_HANA_L2L3L4.md rule 7, harness MUST use a dedicated test user. SYSTEM is NOT allowed and will cause harness failure.",
+      "forbidden_users": ["SYSTEM"],
+      "default_user": "SAIQL_L2L3L4_TEST"
+    }
+  },
+  "privileges": {
+    "required": {
+      "schema_privileges": [
+        "CREATE ANY",
+        "ALTER",
+        "DROP",
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE",
+        "EXECUTE"
+      ],
+      "system_privileges": [
+        "CREATE SCHEMA",
+        "DROP SCHEMA"
+      ],
+      "catalog_privileges": [
+        "SELECT on SYS.VIEWS",
+        "SELECT on SYS.PROCEDURES",
+        "SELECT on SYS.PROCEDURE_PARAMETERS",
+        "SELECT on SYS.FUNCTIONS",
+        "SELECT on SYS.FUNCTION_PARAMETERS",
+        "SELECT on SYS.TRIGGERS",
+        "SELECT on SYS.OBJECT_DEPENDENCIES",
+        "SELECT on SYS.TABLES",
+        "SELECT on SYS.TABLE_COLUMNS",
+        "SELECT on SYS.CONSTRAINTS",
+        "SELECT on SYS.REFERENTIAL_CONSTRAINTS",
+        "SELECT on SYS.INDEXES"
+      ]
+    },
+    "test_user_setup": {
+      "notes": "Create dedicated test user with required privileges. SYSTEM user is NOT allowed.",
+      "sql": [
+        "CREATE USER SAIQL_L2L3L4_TEST PASSWORD \"TestPass123\" NO FORCE_FIRST_PASSWORD_CHANGE;",
+        "GRANT CREATE SCHEMA TO SAIQL_L2L3L4_TEST;",
+        "GRANT CATALOG READ TO SAIQL_L2L3L4_TEST;"
+      ],
+      "example_env": [
+        "export HANA_USER=SAIQL_L2L3L4_TEST",
+        "export HANA_PASSWORD='TestPass123'"
+      ]
+    },
+    "privilege_enforcement": {
+      "mode": "fail_fast",
+      "notes": "Harness FAILS if required privileges are missing. No 'record only' behavior."
+    }
+  },
+  "manifest_fields": {
+    "hana_user": "Records the dedicated test user for compliance proof",
+    "schema": "Records the per-run schema name",
+    "privileges_summary": "Records privilege check results",
+    "seed_hash": "Records deterministic fixture hash"
+  },
+  "fixtures": {
+    "base": "tests/integration/phase07_hana_harness/fixtures/test_schema.sql",
+    "l2l3l4": "tests/integration/hana_l2l3l4_harness/fixtures/l2l3l4_schema.sql",
+    "load_order": ["base", "l2l3l4"]
+  },
+  "l2_views": {
+    "expected_count": 4,
+    "expected_names": [
+      "customer_summary",
+      "active_customers",
+      "high_balance_active",
+      "order_summary"
+    ],
+    "dependency_order": [
+      "customer_summary",
+      "active_customers",
+      "order_summary",
+      "high_balance_active"
+    ],
+    "limitations": [
+      "Calculation Views (HDI/repository artifacts) NOT supported",
+      "Complex subqueries NOT validated",
+      "Only catalog-based SQL views extracted"
+    ]
+  },
+  "l3_routines": {
+    "expected_procedures": 2,
+    "expected_functions": 2,
+    "procedure_names": [
+      "update_customer_status",
+      "get_customer_count"
+    ],
+    "function_names": [
+      "get_customer_balance",
+      "calculate_discount_price"
+    ],
+    "limitations": [
+      "AMDP (ABAP Managed Database Procedures) NOT supported",
+      "Complex dependencies may not be fully resolved",
+      "Only SQLScript/SQL routines extracted"
+    ]
+  },
+  "l4_triggers": {
+    "total_expected": 3,
+    "supported_subset": {
+      "count": 2,
+      "names": ["trg_upper_lastname", "trg_trim_email"],
+      "patterns": ["BEFORE INSERT normalization", "BEFORE UPDATE normalization"]
+    },
+    "unsupported": {
+      "count": 1,
+      "names": ["trg_order_audit"],
+      "reasons": ["AFTER trigger with DML operations"]
+    },
+    "limitations": [
+      "Only BEFORE INSERT/UPDATE with simple normalization (UPPER/LOWER/TRIM) supported",
+      "AFTER triggers NOT supported",
+      "Triggers with DML operations NOT supported",
+      "Triggers with loops/cursors NOT supported",
+      "Triggers with conditional logic NOT supported"
+    ]
+  },
+  "validation": {
+    "l2_checks": [
+      "presence_parity",
+      "definition_parity",
+      "result_parity"
+    ],
+    "l3_checks": [
+      "presence_parity",
+      "signature_parity",
+      "behavioral_validation"
+    ],
+    "l4_checks": [
+      "subset_classification",
+      "supported_trigger_effects",
+      "unsupported_trigger_stub"
+    ]
+  },
+  "bundle_output": {
+    "runs_dir": "tests/integration/hana_l2l3l4_harness/runs",
+    "manifest_file": "run_manifest.json",
+    "logs_dir": "logs",
+    "reports_dir": "reports",
+    "report_files": [
+      "validation_report.json",
+      "limitations_report.json",
+      "parity_summary.json"
+    ]
+  }
+}

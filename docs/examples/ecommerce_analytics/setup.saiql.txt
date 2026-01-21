@@ -1,0 +1,680 @@
+/**
+ * E-commerce Analytics Database Setup
+ * 
+ * Complete database schema and sample data for e-commerce analytics
+ * Demonstrates SAIQL schema operations, constraints, and data loading
+ * 
+ * Schema Overview:
+ * - Customers: Customer profiles and demographics
+ * - Products: Product catalog with categories and pricing
+ * - Orders: Order transactions and status tracking
+ * - Order_Items: Individual items within orders
+ * - Categories: Product categorization hierarchy
+ * - Reviews: Customer product reviews and ratings
+ * - Inventory: Stock levels and warehouse data
+ * - Promotions: Discount codes and marketing campaigns
+ * - Sessions: Website visitor sessions and behavior
+ * - Cart_Events: Shopping cart interaction tracking
+ * 
+ * Usage: Run this file to create complete e-commerce analytics environment
+ * Author: Apollo & Claude
+ * Version: 1.0.0
+ * Database: Multi-dialect support (SQLite, PostgreSQL, MySQL)
+ */
+
+// =============================================================================
+// TRANSACTION START - Ensure atomic schema creation
+// =============================================================================
+
+$1;  // BEGIN TRANSACTION
+
+// =============================================================================
+// SCHEMA OPERATIONS - Create database structure
+// =============================================================================
+
+/**
+ * CUSTOMERS TABLE
+ * Core customer information and demographics
+ */
+@A[customers]::
+    customer_id BIGINT !1 !6(nextval('customer_seq')),
+    email VARCHAR(255) !3 !4,
+    first_name VARCHAR(100) !4,
+    last_name VARCHAR(100) !4,
+    phone VARCHAR(20),
+    date_of_birth DATE,
+    gender VARCHAR(10),
+    
+    // Address information
+    street_address TEXT,
+    city VARCHAR(100),
+    state_province VARCHAR(100),
+    postal_code VARCHAR(20),
+    country VARCHAR(100) !6('United States'),
+    
+    // Customer lifecycle
+    registration_date TIMESTAMP !6(CURRENT_TIMESTAMP),
+    last_login TIMESTAMP,
+    is_active BOOLEAN !6(true),
+    customer_tier VARCHAR(20) !6('bronze'),  // bronze, silver, gold, platinum
+    
+    // Marketing preferences
+    email_subscribed BOOLEAN !6(true),
+    sms_subscribed BOOLEAN !6(false),
+    
+    // Metadata
+    created_at TIMESTAMP !6(CURRENT_TIMESTAMP),
+    updated_at TIMESTAMP !6(CURRENT_TIMESTAMP)
+>>oQ;
+
+/**
+ * CATEGORIES TABLE
+ * Hierarchical product categorization
+ */
+@A[categories]::
+    category_id BIGINT !1 !6(nextval('category_seq')),
+    category_name VARCHAR(100) !4 !3,
+    parent_category_id BIGINT !2(categories.category_id),
+    category_path TEXT,  // e.g., "Electronics > Computers > Laptops"
+    description TEXT,
+    is_active BOOLEAN !6(true),
+    sort_order INTEGER !6(0),
+    created_at TIMESTAMP !6(CURRENT_TIMESTAMP)
+>>oQ;
+
+/**
+ * PRODUCTS TABLE
+ * Product catalog with pricing and attributes
+ */
+@A[products]::
+    product_id BIGINT !1 !6(nextval('product_seq')),
+    sku VARCHAR(50) !3 !4,
+    product_name VARCHAR(200) !4,
+    description TEXT,
+    category_id BIGINT !4 !2(categories.category_id),
+    
+    // Pricing
+    cost_price DECIMAL(10,2) !4,
+    list_price DECIMAL(10,2) !4,
+    sale_price DECIMAL(10,2),
+    currency VARCHAR(3) !6('USD'),
+    
+    // Physical attributes
+    weight_kg DECIMAL(8,3),
+    dimensions_cm VARCHAR(50),  // "L x W x H"
+    color VARCHAR(50),
+    size VARCHAR(20),
+    material VARCHAR(100),
+    
+    // Business attributes
+    brand VARCHAR(100),
+    model VARCHAR(100),
+    is_active BOOLEAN !6(true),
+    is_featured BOOLEAN !6(false),
+    requires_shipping BOOLEAN !6(true),
+    is_digital BOOLEAN !6(false),
+    
+    // SEO and marketing
+    tags TEXT,  // JSON array of tags
+    meta_title VARCHAR(200),
+    meta_description TEXT,
+    
+    // Timestamps
+    created_at TIMESTAMP !6(CURRENT_TIMESTAMP),
+    updated_at TIMESTAMP !6(CURRENT_TIMESTAMP),
+    discontinued_at TIMESTAMP
+>>oQ;
+
+/**
+ * INVENTORY TABLE
+ * Stock levels and warehouse management
+ */
+@A[inventory]::
+    inventory_id BIGINT !1 !6(nextval('inventory_seq')),
+    product_id BIGINT !4 !2(products.product_id),
+    warehouse_location VARCHAR(100) !6('Main Warehouse'),
+    
+    // Stock levels
+    quantity_on_hand INTEGER !6(0),
+    quantity_reserved INTEGER !6(0),
+    quantity_available INTEGER !6(0),  // on_hand - reserved
+    reorder_point INTEGER !6(10),
+    max_stock_level INTEGER !6(1000),
+    
+    // Cost tracking
+    average_cost DECIMAL(10,2),
+    last_cost DECIMAL(10,2),
+    
+    // Timestamps
+    last_updated TIMESTAMP !6(CURRENT_TIMESTAMP),
+    last_restock_date TIMESTAMP,
+    next_restock_date TIMESTAMP
+>>oQ;
+
+/**
+ * ORDERS TABLE
+ * Customer order transactions
+ */
+@A[orders]::
+    order_id BIGINT !1 !6(nextval('order_seq')),
+    customer_id BIGINT !4 !2(customers.customer_id),
+    order_number VARCHAR(50) !3 !4,
+    
+    // Order status and timing
+    order_status VARCHAR(20) !6('pending'),  // pending, confirmed, shipped, delivered, cancelled
+    order_date TIMESTAMP !6(CURRENT_TIMESTAMP),
+    shipped_date TIMESTAMP,
+    delivered_date TIMESTAMP,
+    cancelled_date TIMESTAMP,
+    
+    // Financial information
+    subtotal DECIMAL(10,2) !4,
+    tax_amount DECIMAL(10,2) !6(0),
+    shipping_cost DECIMAL(10,2) !6(0),
+    discount_amount DECIMAL(10,2) !6(0),
+    total_amount DECIMAL(10,2) !4,
+    currency VARCHAR(3) !6('USD'),
+    
+    // Shipping information
+    shipping_method VARCHAR(50),
+    tracking_number VARCHAR(100),
+    shipping_address_line1 TEXT,
+    shipping_address_line2 TEXT,
+    shipping_city VARCHAR(100),
+    shipping_state VARCHAR(100),
+    shipping_postal_code VARCHAR(20),
+    shipping_country VARCHAR(100),
+    
+    // Billing information
+    billing_address_line1 TEXT,
+    billing_address_line2 TEXT,
+    billing_city VARCHAR(100),
+    billing_state VARCHAR(100),
+    billing_postal_code VARCHAR(20),
+    billing_country VARCHAR(100),
+    
+    // Payment information
+    payment_method VARCHAR(50),
+    payment_status VARCHAR(20) !6('pending'),  // pending, completed, failed, refunded
+    payment_reference VARCHAR(100),
+    
+    // Marketing attribution
+    utm_source VARCHAR(100),
+    utm_medium VARCHAR(100),
+    utm_campaign VARCHAR(100),
+    referrer_url TEXT,
+    
+    // Metadata
+    notes TEXT,
+    created_at TIMESTAMP !6(CURRENT_TIMESTAMP),
+    updated_at TIMESTAMP !6(CURRENT_TIMESTAMP)
+>>oQ;
+
+/**
+ * ORDER_ITEMS TABLE
+ * Individual items within orders (order line items)
+ */
+@A[order_items]::
+    order_item_id BIGINT !1 !6(nextval('order_item_seq')),
+    order_id BIGINT !4 !2(orders.order_id),
+    product_id BIGINT !4 !2(products.product_id),
+    
+    // Item details
+    quantity INTEGER !4,
+    unit_price DECIMAL(10,2) !4,
+    discount_amount DECIMAL(10,2) !6(0),
+    total_price DECIMAL(10,2) !4,  // (quantity * unit_price) - discount_amount
+    
+    // Product snapshot at time of order
+    product_name VARCHAR(200),
+    product_sku VARCHAR(50),
+    product_category VARCHAR(100),
+    
+    // Fulfillment tracking
+    shipped_quantity INTEGER !6(0),
+    cancelled_quantity INTEGER !6(0),
+    returned_quantity INTEGER !6(0),
+    
+    created_at TIMESTAMP !6(CURRENT_TIMESTAMP)
+>>oQ;
+
+/**
+ * PROMOTIONS TABLE
+ * Marketing campaigns and discount codes
+ */
+@A[promotions]::
+    promotion_id BIGINT !1 !6(nextval('promotion_seq')),
+    promotion_code VARCHAR(50) !3 !4,
+    promotion_name VARCHAR(200) !4,
+    description TEXT,
+    
+    // Promotion type and value
+    discount_type VARCHAR(20) !4,  // percentage, fixed_amount, free_shipping
+    discount_value DECIMAL(10,2) !4,
+    minimum_order_amount DECIMAL(10,2),
+    maximum_discount_amount DECIMAL(10,2),
+    
+    // Validity period
+    start_date TIMESTAMP !4,
+    end_date TIMESTAMP !4,
+    
+    // Usage limits
+    usage_limit INTEGER,
+    usage_limit_per_customer INTEGER !6(1),
+    current_usage_count INTEGER !6(0),
+    
+    // Targeting
+    applicable_categories TEXT,  // JSON array of category IDs
+    applicable_products TEXT,    // JSON array of product IDs
+    customer_tier_required VARCHAR(20),
+    
+    // Status
+    is_active BOOLEAN !6(true),
+    created_at TIMESTAMP !6(CURRENT_TIMESTAMP)
+>>oQ;
+
+/**
+ * REVIEWS TABLE
+ * Customer product reviews and ratings
+ */
+@A[reviews]::
+    review_id BIGINT !1 !6(nextval('review_seq')),
+    product_id BIGINT !4 !2(products.product_id),
+    customer_id BIGINT !4 !2(customers.customer_id),
+    order_id BIGINT !2(orders.order_id),
+    
+    // Review content
+    rating INTEGER !4 !5(rating >= 1 AND rating <= 5),
+    title VARCHAR(200),
+    review_text TEXT,
+    
+    // Review metadata
+    is_verified_purchase BOOLEAN !6(false),
+    is_approved BOOLEAN !6(false),
+    helpful_votes INTEGER !6(0),
+    total_votes INTEGER !6(0),
+    
+    // Timestamps
+    created_at TIMESTAMP !6(CURRENT_TIMESTAMP),
+    approved_at TIMESTAMP
+>>oQ;
+
+/**
+ * SESSIONS TABLE
+ * Website visitor sessions and behavior tracking
+ */
+@A[sessions]::
+    session_id VARCHAR(100) !1,
+    customer_id BIGINT !2(customers.customer_id),  // NULL for anonymous sessions
+    
+    // Session details
+    session_start TIMESTAMP !4,
+    session_end TIMESTAMP,
+    duration_seconds INTEGER,
+    page_views INTEGER !6(0),
+    
+    // Traffic source
+    utm_source VARCHAR(100),
+    utm_medium VARCHAR(100),
+    utm_campaign VARCHAR(100),
+    referrer_url TEXT,
+    landing_page TEXT,
+    
+    // Device and browser info
+    user_agent TEXT,
+    ip_address VARCHAR(45),
+    device_type VARCHAR(20),  // desktop, mobile, tablet
+    browser VARCHAR(50),
+    operating_system VARCHAR(50),
+    screen_resolution VARCHAR(20),
+    
+    // Geographic info
+    country VARCHAR(100),
+    region VARCHAR(100),
+    city VARCHAR(100),
+    timezone VARCHAR(50),
+    
+    // Session outcome
+    converted BOOLEAN !6(false),
+    conversion_value DECIMAL(10,2),
+    bounce BOOLEAN !6(false),
+    
+    created_at TIMESTAMP !6(CURRENT_TIMESTAMP)
+>>oQ;
+
+/**
+ * CART_EVENTS TABLE
+ * Shopping cart interaction tracking
+ */
+@A[cart_events]::
+    event_id BIGINT !1 !6(nextval('cart_event_seq')),
+    session_id VARCHAR(100) !4 !2(sessions.session_id),
+    customer_id BIGINT !2(customers.customer_id),
+    product_id BIGINT !2(products.product_id),
+    
+    // Event details
+    event_type VARCHAR(20) !4,  // add_to_cart, remove_from_cart, update_quantity, view_cart, abandon_cart
+    quantity INTEGER,
+    unit_price DECIMAL(10,2),
+    
+    // Event context
+    page_url TEXT,
+    referrer_page TEXT,
+    
+    event_timestamp TIMESTAMP !6(CURRENT_TIMESTAMP)
+>>oQ;
+
+// =============================================================================
+// INDEXES - Performance optimization for common queries
+// =============================================================================
+
+// Customer indexes
+#1[customers,email]::>>oQ;
+#1[customers,registration_date]::>>oQ;
+#1[customers,customer_tier]::>>oQ;
+##[customers,last_name,first_name]::>>oQ;
+
+// Product indexes
+#1[products,sku]::>>oQ;
+#1[products,category_id]::>>oQ;
+#1[products,brand]::>>oQ;
+#1[products,is_active]::>>oQ;
+##[products,category_id,is_active]::>>oQ;
+##[products,list_price,sale_price]::>>oQ;
+
+// Order indexes  
+#1[orders,customer_id]::>>oQ;
+#1[orders,order_date]::>>oQ;
+#1[orders,order_status]::>>oQ;
+##[orders,customer_id,order_date]::>>oQ;
+##[orders,order_status,order_date]::>>oQ;
+
+// Order items indexes
+#1[order_items,order_id]::>>oQ;
+#1[order_items,product_id]::>>oQ;
+##[order_items,order_id,product_id]::>>oQ;
+
+// Inventory indexes
+#1[inventory,product_id]::>>oQ;
+#1[inventory,warehouse_location]::>>oQ;
+##[inventory,product_id,warehouse_location]::>>oQ;
+
+// Reviews indexes
+#1[reviews,product_id]::>>oQ;
+#1[reviews,customer_id]::>>oQ;
+#1[reviews,rating]::>>oQ;
+##[reviews,product_id,is_approved]::>>oQ;
+
+// Sessions indexes
+#1[sessions,customer_id]::>>oQ;
+#1[sessions,session_start]::>>oQ;
+##[sessions,session_start,converted]::>>oQ;
+
+// Cart events indexes
+#1[cart_events,session_id]::>>oQ;
+#1[cart_events,product_id]::>>oQ;
+#1[cart_events,event_timestamp]::>>oQ;
+
+// =============================================================================
+// SAMPLE DATA INSERTION - Realistic e-commerce data for testing
+// =============================================================================
+
+/**
+ * CATEGORIES - Product category hierarchy
+ */
++V[categories(category_name,parent_category_id,category_path,description)]::
+Electronics,NULL,Electronics,Electronic devices and accessories;
+Computers,1,Electronics > Computers,Desktop and laptop computers;
+Smartphones,1,Electronics > Smartphones,Mobile phones and accessories;
+Gaming,1,Electronics > Gaming,Gaming consoles and accessories;
+Audio,1,Electronics > Audio,Headphones speakers and audio equipment;
+
+Clothing,NULL,Clothing,Apparel and fashion items;
+Mens Clothing,6,Clothing > Mens,Mens apparel and accessories;
+Womens Clothing,6,Clothing > Womens,Womens apparel and accessories;
+Footwear,6,Clothing > Footwear,Shoes and footwear for all ages;
+
+Home & Garden,NULL,Home & Garden,Home improvement and garden supplies;
+Furniture,10,Home & Garden > Furniture,Home and office furniture;
+Kitchen,10,Home & Garden > Kitchen,Kitchen appliances and cookware;
+Garden,10,Home & Garden > Garden,Gardening tools and outdoor equipment;
+
+Books,NULL,Books,Books and educational materials;
+Fiction,14,Books > Fiction,Novels and fictional literature;
+Non-Fiction,14,Books > Non-Fiction,Educational and reference books;
+Textbooks,14,Books > Textbooks,Academic and professional textbooks
+>>oQ;
+
+/**
+ * CUSTOMERS - Diverse customer base for analytics
+ */
++V[customers(email,first_name,last_name,phone,date_of_birth,gender,city,state_province,country,customer_tier,email_subscribed)]::
+john.doe@email.com,John,Doe,555-0101,1985-03-15,male,New York,NY,United States,gold,true;
+jane.smith@email.com,Jane,Smith,555-0102,1990-07-22,female,Los Angeles,CA,United States,platinum,true;
+mike.johnson@email.com,Mike,Johnson,555-0103,1988-11-08,male,Chicago,IL,United States,silver,false;
+sarah.williams@email.com,Sarah,Williams,555-0104,1992-04-30,female,Houston,TX,United States,bronze,true;
+david.brown@email.com,David,Brown,555-0105,1987-09-12,male,Phoenix,AZ,United States,gold,true;
+lisa.davis@email.com,Lisa,Davis,555-0106,1991-12-03,female,Philadelphia,PA,United States,silver,true;
+robert.wilson@email.com,Robert,Wilson,555-0107,1983-06-18,male,San Antonio,TX,United States,platinum,false;
+emily.moore@email.com,Emily,Moore,555-0108,1989-01-25,female,San Diego,CA,United States,gold,true;
+james.taylor@email.com,James,Taylor,555-0109,1986-08-07,male,Dallas,TX,United States,bronze,true;
+maria.garcia@email.com,Maria,Garcia,555-0110,1993-10-14,female,San Jose,CA,United States,silver,true;
+christopher.anderson@email.com,Christopher,Anderson,555-0111,1984-05-20,male,Austin,TX,United States,gold,false;
+michelle.thomas@email.com,Michelle,Thomas,555-0112,1990-02-28,female,Jacksonville,FL,United States,bronze,true;
+daniel.jackson@email.com,Daniel,Jackson,555-0113,1987-11-16,male,Fort Worth,TX,United States,platinum,true;
+ashley.white@email.com,Ashley,White,555-0114,1991-07-09,female,Columbus,OH,United States,silver,true;
+matthew.harris@email.com,Matthew,Harris,555-0115,1985-04-03,male,Charlotte,NC,United States,gold,false
+>>oQ;
+
+/**
+ * PRODUCTS - Comprehensive product catalog
+ */
++V[products(sku,product_name,description,category_id,cost_price,list_price,sale_price,brand,is_featured)]::
+LAPTOP-001,Gaming Laptop Pro 15,High-performance gaming laptop with RTX graphics,2,800.00,1299.99,1199.99,TechBrand,true;
+PHONE-001,Smartphone X1,Latest flagship smartphone with advanced camera,3,400.00,799.99,749.99,PhoneCorp,true;
+CONSOLE-001,Gaming Console Next,Next-generation gaming console,4,300.00,499.99,449.99,GameTech,true;
+HEADPHONES-001,Wireless Headphones Pro,Premium noise-canceling wireless headphones,5,60.00,199.99,179.99,AudioMax,false;
+SHIRT-001,Premium Cotton T-Shirt,High-quality cotton t-shirt,7,8.00,29.99,24.99,FashionPlus,false;
+JEANS-001,Designer Jeans Classic,Premium denim jeans,7,25.00,89.99,79.99,DenimCo,false;
+DRESS-001,Summer Dress Floral,Elegant floral summer dress,8,18.00,59.99,49.99,StyleHouse,true;
+SNEAKERS-001,Athletic Sneakers Pro,Professional athletic sneakers,9,35.00,129.99,109.99,SportsFoot,false;
+SOFA-001,Modern Sectional Sofa,Comfortable modern sectional sofa,11,400.00,1299.99,1199.99,HomeFurn,true;
+MIXER-001,Stand Mixer Deluxe,Professional stand mixer for baking,12,80.00,299.99,269.99,KitchenPro,false;
+NOVEL-001,Mystery Novel Bestseller,Award-winning mystery novel,15,3.00,14.99,12.99,BookHouse,false;
+TEXTBOOK-001,Computer Science Fundamentals,Comprehensive CS textbook,17,45.00,149.99,139.99,EduPress,false;
+MONITOR-001,4K Gaming Monitor 27,Ultra-high resolution gaming monitor,2,200.00,449.99,399.99,DisplayTech,true;
+CAMERA-001,Digital Camera DSLR,Professional DSLR camera,1,350.00,899.99,799.99,PhotoPro,true;
+TABLET-001,Tablet Pro 11,Professional tablet for creativity,1,250.00,599.99,549.99,TechBrand,false
+>>oQ;
+
+/**
+ * INVENTORY - Stock levels for all products
+ */
++V[inventory(product_id,warehouse_location,quantity_on_hand,quantity_reserved,quantity_available,reorder_point,average_cost)]::
+1,Main Warehouse,50,5,45,10,800.00;
+2,Main Warehouse,100,8,92,20,400.00;
+3,Main Warehouse,25,3,22,5,300.00;
+4,Main Warehouse,75,10,65,15,60.00;
+5,Main Warehouse,200,15,185,50,8.00;
+6,Main Warehouse,150,12,138,30,25.00;
+7,Main Warehouse,80,6,74,20,18.00;
+8,Main Warehouse,120,8,112,25,35.00;
+9,Main Warehouse,30,2,28,5,400.00;
+10,Main Warehouse,40,3,37,8,80.00;
+11,Main Warehouse,500,25,475,100,3.00;
+12,Main Warehouse,300,18,282,60,45.00;
+13,Main Warehouse,35,4,31,8,200.00;
+14,Main Warehouse,20,1,19,5,350.00;
+15,Main Warehouse,60,7,53,12,250.00
+>>oQ;
+
+/**
+ * PROMOTIONS - Active marketing campaigns
+ */
++V[promotions(promotion_code,promotion_name,description,discount_type,discount_value,start_date,end_date,usage_limit)]::
+WELCOME10,New Customer Welcome,10% discount for first-time customers,percentage,10.00,2024-01-01 00:00:00,2024-12-31 23:59:59,NULL;
+SUMMER20,Summer Sale,20% off summer collection,percentage,20.00,2024-06-01 00:00:00,2024-08-31 23:59:59,1000;
+FREESHIP,Free Shipping,Free shipping on orders over $50,free_shipping,0.00,2024-01-01 00:00:00,2024-12-31 23:59:59,NULL;
+TECH15,Tech Tuesday,15% off electronics,percentage,15.00,2024-01-01 00:00:00,2024-12-31 23:59:59,500;
+LOYALTY25,Loyalty Reward,25% off for gold tier customers,percentage,25.00,2024-01-01 00:00:00,2024-12-31 23:59:59,NULL
+>>oQ;
+
+/**
+ * ORDERS - Historical order data for analytics (Q1 2024)
+ */
++V[orders(customer_id,order_number,order_status,order_date,subtotal,tax_amount,shipping_cost,total_amount,shipping_method,payment_method,payment_status)]::
+1,ORD-2024-001,delivered,2024-01-15 10:30:00,1199.99,95.99,15.00,1310.98,standard,credit_card,completed;
+2,ORD-2024-002,delivered,2024-01-16 14:45:00,749.99,59.99,10.00,819.98,express,paypal,completed;
+3,ORD-2024-003,delivered,2024-01-18 09:15:00,449.99,35.99,0.00,485.98,standard,credit_card,completed;
+1,ORD-2024-004,delivered,2024-01-20 16:20:00,179.99,14.39,8.00,202.38,standard,credit_card,completed;
+4,ORD-2024-005,delivered,2024-01-22 11:30:00,129.98,10.39,12.00,152.37,express,debit_card,completed;
+5,ORD-2024-006,cancelled,2024-01-25 13:45:00,89.99,7.19,5.00,102.18,standard,credit_card,refunded;
+2,ORD-2024-007,delivered,2024-01-28 08:00:00,1299.99,103.99,20.00,1423.98,express,credit_card,completed;
+6,ORD-2024-008,delivered,2024-02-01 15:30:00,599.99,47.99,15.00,662.98,standard,paypal,completed;
+7,ORD-2024-009,delivered,2024-02-03 12:15:00,269.99,21.59,10.00,301.58,standard,credit_card,completed;
+3,ORD-2024-010,shipped,2024-02-05 09:45:00,899.99,71.99,18.00,989.98,express,credit_card,completed;
+8,ORD-2024-011,delivered,2024-02-08 14:00:00,109.99,8.79,0.00,118.78,standard,debit_card,completed;
+4,ORD-2024-012,delivered,2024-02-10 16:30:00,549.99,43.99,12.00,605.98,standard,paypal,completed;
+9,ORD-2024-013,delivered,2024-02-12 11:20:00,399.99,31.99,15.00,446.98,express,credit_card,completed;
+5,ORD-2024-014,delivered,2024-02-15 13:10:00,199.98,15.99,8.00,223.97,standard,credit_card,completed;
+10,ORD-2024-015,pending,2024-02-18 10:00:00,799.99,63.99,20.00,883.98,express,credit_card,pending
+>>oQ;
+
+/**
+ * ORDER_ITEMS - Line items for orders
+ */
++V[order_items(order_id,product_id,quantity,unit_price,total_price,product_name,product_sku)]::
+1,1,1,1199.99,1199.99,Gaming Laptop Pro 15,LAPTOP-001;
+2,2,1,749.99,749.99,Smartphone X1,PHONE-001;
+3,3,1,449.99,449.99,Gaming Console Next,CONSOLE-001;
+4,4,1,179.99,179.99,Wireless Headphones Pro,HEADPHONES-001;
+5,5,2,24.99,49.99,Premium Cotton T-Shirt,SHIRT-001;
+5,8,1,79.99,79.99,Designer Jeans Classic,JEANS-001;
+6,6,1,89.99,89.99,Designer Jeans Classic,JEANS-001;
+7,9,1,1199.99,1199.99,Modern Sectional Sofa,SOFA-001;
+7,10,1,99.99,99.99,Stand Mixer Deluxe,MIXER-001;
+8,15,1,549.99,549.99,Tablet Pro 11,TABLET-001;
+8,4,1,179.99,179.99,Wireless Headphones Pro,HEADPHONES-001;
+9,10,1,269.99,269.99,Stand Mixer Deluxe,MIXER-001;
+10,14,1,799.99,799.99,Digital Camera DSLR,CAMERA-001;
+10,13,1,99.99,99.99,4K Gaming Monitor 27,MONITOR-001;
+11,8,1,109.99,109.99,Athletic Sneakers Pro,SNEAKERS-001;
+12,15,1,549.99,549.99,Tablet Pro 11,TABLET-001;
+13,13,1,399.99,399.99,4K Gaming Monitor 27,MONITOR-001;
+14,4,1,179.99,179.99,Wireless Headphones Pro,HEADPHONES-001;
+14,5,1,19.99,19.99,Premium Cotton T-Shirt,SHIRT-001;
+15,2,1,749.99,749.99,Smartphone X1,PHONE-001;
+15,4,1,49.99,49.99,Wireless Headphones Pro,HEADPHONES-001
+>>oQ;
+
+/**
+ * REVIEWS - Customer product reviews
+ */
++V[reviews(product_id,customer_id,order_id,rating,title,review_text,is_verified_purchase,is_approved)]::
+1,1,1,5,Excellent gaming laptop,This laptop exceeded my expectations. Great performance and build quality.,true,true;
+2,2,2,4,Good smartphone but pricey,Solid phone with great camera but a bit expensive for what you get.,true,true;
+3,3,3,5,Best gaming console ever,Amazing graphics and super fast loading times. Highly recommend!,true,true;
+4,4,4,4,Great sound quality,Excellent noise cancellation and comfortable fit.,true,true;
+15,6,8,5,Perfect tablet for work,Love this tablet for design work. Screen is gorgeous and performance is smooth.,true,true;
+10,7,9,3,Mixer is okay,Works well but a bit loud. Good value for the price.,true,true;
+14,10,10,5,Professional camera,Outstanding image quality and build. Perfect for professional photography.,true,true;
+13,13,13,4,Great monitor for gaming,Colors are vibrant and response time is excellent.,true,true;
+4,14,14,5,Love these headphones,Best headphones I've ever owned. Sound quality is incredible.,true,true;
+2,15,15,4,Solid phone upgrade,Good upgrade from my old phone. Battery life could be better.,true,false
+>>oQ;
+
+/**
+ * SESSIONS - Website visitor behavior (sample week)
+ */
++V[sessions(session_id,customer_id,session_start,session_end,page_views,utm_source,utm_medium,device_type,converted,conversion_value)]::
+sess_001,1,2024-02-01 09:00:00,2024-02-01 09:15:00,8,google,organic,desktop,true,1310.98;
+sess_002,NULL,2024-02-01 10:30:00,2024-02-01 10:35:00,3,facebook,social,mobile,false,0.00;
+sess_003,2,2024-02-01 14:15:00,2024-02-01 14:45:00,12,google,cpc,desktop,true,819.98;
+sess_004,NULL,2024-02-01 16:20:00,2024-02-01 16:22:00,2,direct,direct,tablet,false,0.00;
+sess_005,3,2024-02-02 11:00:00,2024-02-02 11:30:00,15,email,newsletter,desktop,true,485.98;
+sess_006,NULL,2024-02-02 13:45:00,2024-02-02 13:50:00,5,instagram,social,mobile,false,0.00;
+sess_007,4,2024-02-02 15:30:00,2024-02-02 16:00:00,20,google,organic,desktop,true,152.37;
+sess_008,NULL,2024-02-03 08:15:00,2024-02-03 08:18:00,3,bing,organic,mobile,false,0.00;
+sess_009,5,2024-02-03 12:00:00,2024-02-03 12:45:00,18,referral,blog,desktop,false,0.00;
+sess_010,6,2024-02-03 19:30:00,2024-02-03 20:00:00,25,facebook,cpc,desktop,true,662.98
+>>oQ;
+
+/**
+ * CART_EVENTS - Shopping cart interaction tracking
+ */
++V[cart_events(session_id,customer_id,product_id,event_type,quantity,unit_price)]::
+sess_001,1,1,add_to_cart,1,1199.99;
+sess_001,1,1,view_cart,1,1199.99;
+sess_003,2,2,add_to_cart,1,749.99;
+sess_003,2,2,view_cart,1,749.99;
+sess_005,3,3,add_to_cart,1,449.99;
+sess_005,3,3,view_cart,1,449.99;
+sess_007,4,4,add_to_cart,1,179.99;
+sess_007,4,5,add_to_cart,2,24.99;
+sess_007,4,4,view_cart,1,179.99;
+sess_009,5,6,add_to_cart,1,89.99;
+sess_009,5,6,abandon_cart,1,89.99;
+sess_010,6,15,add_to_cart,1,549.99;
+sess_010,6,4,add_to_cart,1,179.99;
+sess_010,6,15,view_cart,1,549.99
+>>oQ;
+
+// =============================================================================
+// COMMIT TRANSACTION - Finalize schema and data creation
+// =============================================================================
+
+$2;  // COMMIT TRANSACTION
+
+// =============================================================================
+// VERIFICATION QUERIES - Validate setup success
+// =============================================================================
+
+// Verify table creation and data insertion
+*COUNT[customers]::*>>oQ;
+*COUNT[products]::*>>oQ;
+*COUNT[orders]::*>>oQ;
+*COUNT[order_items]::*>>oQ;
+*COUNT[categories]::*>>oQ;
+*COUNT[reviews]::*>>oQ;
+*COUNT[inventory]::*>>oQ;
+*COUNT[promotions]::*>>oQ;
+*COUNT[sessions]::*>>oQ;
+*COUNT[cart_events]::*>>oQ;
+
+// Quick data validation queries
+*3[customers]::customer_tier,COUNT(*)+{is_active=true}^{customer_tier}>>oQ;
+*3[products]::category_id,COUNT(*),AVG(list_price)^{category_id}>>oQ;
+*3[orders]::order_status,COUNT(*),SUM(total_amount)^{order_status}>>oQ;
+
+// =============================================================================
+// SETUP COMPLETE
+// =============================================================================
+
+/**
+ * E-COMMERCE ANALYTICS DATABASE SETUP COMPLETE!
+ * 
+ * Created Tables:
+ * ? customers (15 records) - Customer profiles and demographics
+ * ? categories (17 records) - Product categorization hierarchy
+ * ? products (15 records) - Product catalog with pricing
+ * ? inventory (15 records) - Stock levels and warehouse data
+ * ? orders (15 records) - Order transactions
+ * ? order_items (21 records) - Order line items
+ * ? promotions (5 records) - Marketing campaigns
+ * ? reviews (10 records) - Customer product reviews
+ * ? sessions (10 records) - Website visitor sessions
+ * ? cart_events (13 records) - Shopping cart interactions
+ * 
+ * Created Indexes:
+ * ? 25 performance indexes for common query patterns
+ * 
+ * Ready for analytics! Use these files:
+ * - sales_analysis.saiql (Revenue and sales analytics)
+ * - customer_segmentation.saiql (Customer behavior analysis)
+ * - inventory_reports.saiql (Stock and inventory management)
+ * 
+ * Example queries to get started:
+ * *3[orders]::order_date,SUM(total_amount)^{DATE(order_date)}>>oQ
+ * *3[customers+orders]::customer_tier,COUNT(orders.order_id),AVG(orders.total_amount)^{customer_tier}>>oQ
+ * *3[products+order_items]::product_name,SUM(quantity)^{product_name}~{SUM(quantity)‍‍‍‌‍‍‌‌​‌‍‌‍‌‌‍‌​‌‍‌‍‌‌‌‌​‍‍‌‍‍‍‍‌​‍‍‌‍‍‍‍‍​‌‍‌‍‌‍‍‌​‍‍‌‌‍‍‍‌​‌‍‍‌‍‌‍‍​‌‌‌‌‌‌‌‌​‍‌‌‌‌‍‌‌ DESC}[10]>>oQ
+ */

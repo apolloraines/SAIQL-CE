@@ -1,0 +1,8 @@
+{
+  "source_database": "SAP HANA",
+  "schema": "SAIQL_L2L3L4_20260114_213940",
+  "l2_views": "PASS",
+  "l3_routines": "PASS",
+  "l4_triggers": "PARTIAL (subset only)",
+  "notes": "Conservative trigger subset: BEFORE INSERT/UPDATE with simple normalization"
+}

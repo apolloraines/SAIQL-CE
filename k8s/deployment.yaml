@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: saiql-server
+  labels:
+    app: saiql
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: saiql
+  template:
+    metadata:
+      labels:
+        app: saiql
+    spec:
+      containers:
+      - name: saiql
+        image: saiql-echo:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5433
+        env:
+        - name: SAIQL_PORT
+          value: "5433"
+        - name: SAIQL_HOST
+          value: "0.0.0.0"
+        - name: SAIQL_TLS_ENABLED
+          value: "true"
+        - name: SAIQL_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: saiql-secrets
+              key: secret-key
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/saiql
+        - name: certs-volume
+          mountPath: /etc/saiql/certs
+          readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5433
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5433
+          initialDelaySeconds: 15
+          periodSeconds: 20
+      volumes:
+      - name: config-volume
+        configMap:
+          name: saiql-config
+      - name: certs-volume
+        secret:
+          secretName: saiql-certs

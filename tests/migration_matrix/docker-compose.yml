@@ -1,0 +1,121 @@
+version: '3.8'
+
+services:
+  # Source Databases
+  source_postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: source_user
+      POSTGRES_PASSWORD: source_password
+      POSTGRES_DB: source_db
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U source_user -d source_db -h 127.0.0.1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 20s
+
+  source_mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: source_db
+      MYSQL_USER: source_user
+      MYSQL_PASSWORD: source_password
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
+
+  source_mssql:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: migration_matrix-source_mssql-1
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=StrongPass123
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P StrongPass123 -Q 'SELECT 1' || exit 1" ]
+      interval: 10s
+      retries: 20
+      start_period: 30s
+      timeout: 10s
+
+  source_oracle:
+    image: gvenzl/oracle-free:slim
+    container_name: migration_matrix-source_oracle-1
+    environment:
+      - ORACLE_PASSWORD=StrongPass123
+      - APP_USER=source_user
+      - APP_USER_PASSWORD=source_password
+    ports:
+      - "1521:1521"
+    healthcheck:
+      test: [ "CMD-SHELL", "export ORACLE_PWD=StrongPass123; echo 'SELECT 1 FROM DUAL;' | sqlplus system/StrongPass123@//localhost:1521/FREE" ]
+      interval: 20s
+      retries: 20
+      start_period: 60s
+      timeout: 15s
+
+  # Target Databases (for verification)
+  target_postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: target_user
+      POSTGRES_PASSWORD: target_password
+      POSTGRES_DB: target_db
+    ports:
+      - "5434:5432"
+
+  target_mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: target_db
+      MYSQL_USER: target_user
+      MYSQL_PASSWORD: target_password
+    ports:
+      - "3308:3306"
+
+  target_mssql:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "StrongPass123"
+      MSSQL_PID: "Express"
+    ports:
+      - "1434:1433"
+
+  # Test Runner (SAIQL Migrator)
+  migrator_runner:
+    build:
+      context: ../../
+      dockerfile: deployment/Dockerfile
+    volumes:
+      - ./:/app/saiql/tests/migration_matrix/
+      - ../../extensions/plugins/postgresql_adapter.py:/app/saiql/extensions/plugins/postgresql_adapter.py
+      - ../../tools/db_migrator.py:/app/saiql/tools/db_migrator.py
+    command: [ "/app/saiql/tests/migration_matrix/run_matrix.sh" ]
+    depends_on:
+      source_postgres:
+        condition: service_healthy
+      source_mysql:
+        condition: service_healthy
+      source_mssql:
+        condition: service_started
+      source_oracle:
+        condition: service_started
+      target_postgres:
+        condition: service_started
+      target_mysql:
+        condition: service_started
+      target_mssql:
+        condition: service_started

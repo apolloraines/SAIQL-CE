@@ -1,0 +1,916 @@
+#!/usr/bin/env python3
+"""
+SAIQL - Direct Query Interface for SAIQL Files
+Fast, direct access to SAIQL databases without intermediate layers
+SAIQL Echo build
+"""
+
+import sys
+import os
+import argparse
+import subprocess
+import struct
+import re
+import json
+import pickle
+import os
+import numpy as np
+import numpy as np
+from pathlib import Path
+
+# Add SAIQL root to path (detect installation location)
+import os.path
+SAIQL_ROOT = Path(__file__).parent.parent.resolve()
+sys.path.insert(0, str(SAIQL_ROOT))
+# CE Edition: QIPI/IndexManager not available
+IndexManager = None
+
+class SAIQL:
+    def __init__(self, database_path=None):
+        self.database_path = database_path
+        # Use environment variable or local test database as default
+        self.default_db = os.environ.get('SAIQL_DEFAULT_DB', './test.saiql')
+        self._loaded_index_path = None
+        self._index_cache = {}
+        self._cache = None
+        self.cache_enabled = False
+
+    def _resolve_db(self, database=None):
+        return database or self.database_path or self.default_db
+
+    def _index_path_for(self, db_path):
+        path = Path(db_path)
+        return Path(str(path) + '.idx')
+
+    def _cache_path_for(self, db_path):
+        base = Path(db_path)
+        cache_dir = Path(os.environ.get('SAIQL_CACHE_DIR', '/tmp/saiql_cache'))
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        cache_base = cache_dir / base.name
+        return (
+            cache_base.with_suffix(cache_base.suffix + '.cache.pkl'),
+            cache_base.with_suffix(cache_base.suffix + '.cache.meta'),
+        )
+
+    def _load_symbol_index(self, db_path):
+        """Load SAIQL V1 index if available."""
+        if self._loaded_index_path == db_path:
+            return self._index_cache
+
+        index = {}
+        idx_path = self._index_path_for(db_path)
+        if idx_path.exists():
+            try:
+                with idx_path.open('rb') as fh:
+                    header = fh.read(16)
+                    if header.startswith(b'SAIQL_IDX_V1'):
+                        while True:
+                            length_bytes = fh.read(2)
+                            if not length_bytes:
+                                break
+                            name_len = int.from_bytes(length_bytes, 'little')
+                            symbol_bytes = fh.read(name_len)
+                            if len(symbol_bytes) != name_len:
+                                break
+                            payload = fh.read(20)
+                            if len(payload) != 20:
+                                break
+                            flags, offset, count, max_ts, reserved = struct.unpack('<IIIII', payload)
+                            symbol = symbol_bytes.decode('utf-8', errors='ignore')
+                            index[symbol] = {
+                                'offset': offset,
+                                'count': count,
+                                'max_timestamp': max_ts,
+                                'flags': flags,
+                            }
+            except Exception:
+                index = {}
+
+        self._loaded_index_path = db_path
+        self._index_cache = index
+        return index
+
+    @staticmethod
+    def _parse_line(line):
+        """Parse a SAIQL line into a dict of fields."""
+        fields = {}
+        parts = line.replace('»', '>>').split()
+        for part in parts:
+            if '>>' in part:
+                key, value = part.split('>>', 1)
+                fields[key.lower()] = value
+        return fields
+
+    @staticmethod
+    def _field_type(field):
+        field = field.lower()
+        if field in ('timestamp', 'granularity'):
+            return 'int'
+        if field in ('open', 'high', 'low', 'close', 'volume'):
+            return 'float'
+        return 'str'
+
+    def _convert_field_value(self, field, value):
+        if value is None:
+            return None
+        field_type = self._field_type(field)
+        try:
+            if field_type == 'int':
+                return int(float(value))
+            if field_type == 'float':
+                return float(value)
+        except Exception:
+            return None
+        return value
+
+    def _build_record(self, fields, line):
+        record = {'_line': line}
+        for key, value in fields.items():
+            if key == 'symbol':
+                record[key] = value
+            else:
+                record[key] = self._convert_field_value(key, value)
+        if 'symbol' not in record:
+            record['symbol'] = fields.get('symbol')
+        if 'timestamp' not in record and fields.get('timestamp') is not None:
+            record['timestamp'] = self._convert_field_value('timestamp', fields.get('timestamp'))
+        return record
+
+    def _load_cache_from_disk(self, db_path):
+        pkl_path, meta_path = self._cache_path_for(db_path)
+        try:
+            with open(meta_path, 'r', encoding='utf-8') as fh:
+                meta = json.load(fh)
+            if meta.get('mtime') != os.path.getmtime(db_path) or meta.get('size') != os.path.getsize(db_path):
+                return False
+            with open(pkl_path, 'rb') as fh:
+                cache_payload = pickle.load(fh)
+        except Exception:
+            return False
+
+        cache_payload['db'] = db_path
+        cache_payload['symbol_cache'] = {}
+        cache_payload['query_cache'] = {}
+        self._cache = cache_payload
+        return True
+
+    def _save_cache_to_disk(self, cache_payload, db_path):
+        pkl_path, meta_path = self._cache_path_for(db_path)
+        temp_pkl = str(pkl_path) + '.tmp'
+        temp_meta = str(meta_path) + '.tmp'
+
+        persist_payload = {
+            key: cache_payload[key]
+            for key in ('lines', 'symbol_map', 'records', 'numpy', 'symbol_indices_np', 'all_indices')
+            if key in cache_payload
+        }
+        try:
+            with open(temp_pkl, 'wb') as fh:
+                pickle.dump(persist_payload, fh, protocol=pickle.HIGHEST_PROTOCOL)
+            meta = {
+                'mtime': os.path.getmtime(db_path),
+                'size': os.path.getsize(db_path),
+            }
+            with open(temp_meta, 'w', encoding='utf-8') as fh:
+                json.dump(meta, fh)
+            os.replace(temp_pkl, pkl_path)
+            os.replace(temp_meta, meta_path)
+        except Exception:
+            for tmp in (temp_pkl, temp_meta):
+                if os.path.exists(tmp):
+                    try:
+                        os.remove(tmp)
+                    except OSError:
+                        pass
+
+    def _ensure_cache(self, db_path):
+        """Load entire database into memory for persistent query handling."""
+        if self._cache and self._cache.get('db') == db_path:
+            return
+
+        if self._load_cache_from_disk(db_path):
+            return
+
+        symbol_map = {}
+        lines = []
+        records = []
+        try:
+            with open(db_path, 'r', encoding='utf-8', errors='ignore') as fh:
+                for raw_line in fh:
+                    line = raw_line.rstrip('\n')
+                    if not line:
+                        continue
+                    lines.append(line)
+                    fields = self._parse_line(line)
+                    record = self._build_record(fields, line)
+                    records.append(record)
+                    symbol = record.get('symbol')
+                    if symbol is not None:
+                        entries = symbol_map.setdefault(symbol, [])
+                        entries.append(len(records) - 1)
+        except OSError:
+            self._cache = None
+            return
+
+        for symbol, indices in symbol_map.items():
+            indices.sort(key=lambda idx: (records[idx].get('timestamp') if records[idx].get('timestamp') is not None else -1))
+
+        count = len(records)
+        symbol_indices_np = {
+            symbol: np.array(indices, dtype=np.int64)
+            for symbol, indices in symbol_map.items()
+        }
+
+        def _float_array(key):
+            return np.array(
+                [
+                    (records[i].get(key) if records[i].get(key) is not None else np.nan)
+                    for i in range(count)
+                ],
+                dtype=np.float64,
+            )
+
+        numpy_data = {
+            'symbol': np.array(
+                [records[i].get('symbol') or '' for i in range(count)],
+                dtype='<U32',
+            ),
+            'timestamp': np.array(
+                [
+                    records[i].get('timestamp')
+                    if records[i].get('timestamp') is not None
+                    else -1
+                    for i in range(count)
+                ],
+                dtype=np.int64,
+            ),
+            'open': _float_array('open'),
+            'high': _float_array('high'),
+            'low': _float_array('low'),
+            'close': _float_array('close'),
+            'volume': _float_array('volume'),
+            'granularity': np.array(
+                [
+                    records[i].get('granularity')
+                    if records[i].get('granularity') is not None
+                    else -1
+                    for i in range(count)
+                ],
+                dtype=np.int32,
+            ),
+        }
+
+        self._cache = {
+            'db': db_path,
+            'lines': lines,
+            'symbol_map': symbol_map,
+            'records': records,
+            'count': len(lines),
+            'symbol_cache': {},
+            'query_cache': {},
+            'numpy': numpy_data,
+            'symbol_indices_np': symbol_indices_np,
+            'all_indices': np.arange(count, dtype=np.int64),
+        }
+        self._save_cache_to_disk(self._cache, db_path)
+
+    @staticmethod
+    def _line_matches_symbol(line, symbol):
+        token = f"symbol>>{symbol}"
+        token_alt = f"symbol»{symbol}"
+        return token in line or token_alt in line
+
+    def _query_symbol_fast(self, db_path, symbol, limit, order_desc=True):
+        """Use the on-disk index plus a trailing window scan to find symbol rows."""
+        idx = self._load_symbol_index(db_path)
+        try:
+            file_size = os.path.getsize(db_path)
+        except OSError:
+            return None
+
+        if file_size == 0:
+            return []
+
+        hint = idx.get(symbol, {}).get('offset', file_size)
+        if hint <= 0 or hint > file_size:
+            hint = file_size
+
+        # Size of trailing window to read (grow with requested limit)
+        window = max(512 * 1024, (limit or 100) * 512)
+        start = max(0, hint - window)
+        length = min(window * 2, file_size - start)
+
+        try:
+            with open(db_path, 'rb') as fh:
+                fh.seek(start)
+                chunk = fh.read(length)
+        except OSError:
+            return None
+
+        if not chunk:
+            return []
+
+        text = chunk.decode('utf-8', errors='ignore')
+        lines = text.splitlines()
+        if start != 0 and lines:
+            lines = lines[1:]
+
+        matches = [line for line in lines if self._line_matches_symbol(line, symbol)]
+
+        if not matches:
+            return []
+
+        if order_desc:
+            matches = list(reversed(matches))
+
+        if limit:
+            return matches[:limit]
+        return matches
+
+    @staticmethod
+    def _extract_symbol_from_where(where_clause):
+        if not where_clause or '=' not in where_clause:
+            return None
+        field, value = where_clause.split('=', 1)
+        field = field.strip().strip('"').lower()
+        value = value.strip().strip("'\"")
+        if field == 'symbol':
+            return value
+        return None
+
+    def _parse_conditions(self, where_clause):
+        if not where_clause:
+            return []
+        parts = re.split(r'\s+AND\s+', where_clause, flags=re.IGNORECASE)
+        conditions = []
+        for part in parts:
+            segment = part.strip()
+            if not segment:
+                continue
+            match = re.match(r'^"?([A-Za-z0-9_]+)"?\s*(>=|<=|!=|=|>|<|LIKE)\s*(.+)$', segment, flags=re.IGNORECASE)
+            if not match:
+                continue
+            field, operator, value = match.groups()
+            field = field.strip().strip('"').lower()
+            operator = operator.upper()
+            value = value.strip().rstrip(';')
+            if operator == 'LIKE':
+                if value.startswith(("'", '"')) and value.endswith(("'", '"')):
+                    value = value[1:-1]
+                pattern = value.replace('%', '.*')
+                try:
+                    compiled = re.compile(pattern)
+                except re.error:
+                    compiled = None
+                conditions.append({
+                    'field': field,
+                    'operator': operator,
+                    'value': compiled,
+                    'raw': value,
+                    'type': 'like',
+                })
+                continue
+
+            if value.startswith(("'", '"')) and value.endswith(("'", '"')):
+                value = value[1:-1]
+
+            field_type = self._field_type(field)
+            converted = None
+            if field_type == 'int':
+                try:
+                    converted = int(float(value))
+                except Exception:
+                    converted = None
+            elif field_type == 'float':
+                try:
+                    converted = float(value)
+                except Exception:
+                    converted = None
+            else:
+                converted = value
+
+            conditions.append({
+                'field': field,
+                'operator': operator,
+                'value': converted,
+                'raw': value,
+                'type': field_type,
+            })
+        return conditions
+
+    def _record_matches(self, record, conditions):
+        for condition in conditions:
+            field = condition['field']
+            operator = condition['operator']
+            value = condition['value']
+            record_value = record.get(field)
+
+            if operator == 'LIKE':
+                if value is None:
+                    return False
+                if record_value is None:
+                    return False
+                if not value.search(str(record_value)):
+                    return False
+                continue
+
+            if record_value is None or value is None:
+                return False
+
+            if operator == '=':
+                if record_value != value:
+                    return False
+            elif operator == '!=':
+                if record_value == value:
+                    return False
+            elif operator == '>':
+                if record_value <= value:
+                    return False
+            elif operator == '<':
+                if record_value >= value:
+                    return False
+            elif operator == '>=':
+                if record_value < value:
+                    return False
+            elif operator == '<=':
+                if record_value > value:
+                    return False
+        return True
+
+    @staticmethod
+    def _extract_order_expression(query):
+        match = re.search(r'ORDER BY\s+(.+?)(?:\s+LIMIT|\s+OFFSET|\s*$)', query, flags=re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+        return None
+
+    def _apply_order(self, records, order_expr, order_desc):
+        if not records:
+            return records
+        if not order_expr:
+            return list(reversed(records)) if order_desc else records
+        expr = order_expr.strip()
+        if '(' in expr:
+            # Complex expression not handled here
+            return list(reversed(records)) if order_desc else records
+        parts = expr.split()
+        field_token = parts[0] if parts else expr
+        field = field_token.strip('"').lower()
+        def key_func(rec):
+            value = rec.get(field)
+            if isinstance(value, (int, float)):
+                return value
+            if value is None:
+                return float('-inf') if order_desc else float('inf')
+            return str(value)
+        return sorted(records, key=key_func, reverse=order_desc)
+
+    def _handle_group_query(self, query, query_upper, records, order_expr, order_desc, limit):
+        agg_match = re.search(r'SELECT\s+symbol\s*,\s*(AVG|MAX|MIN|SUM)\s*\(([^)]+)\)', query, flags=re.IGNORECASE)
+        if not agg_match:
+            return None
+        if 'GROUP BY' not in query_upper:
+            return None
+        agg_func = agg_match.group(1).upper()
+        agg_field = agg_match.group(2).strip().strip('"').lower()
+
+        groups = {}
+        for record in records:
+            symbol = record.get('symbol')
+            if symbol is None:
+                continue
+            value = record.get(agg_field)
+            if value is None:
+                continue
+            entry = groups.setdefault(symbol, {'count': 0, 'sum': 0.0, 'max': None, 'min': None})
+            entry['count'] += 1
+            entry['sum'] += float(value)
+            if entry['max'] is None or value > entry['max']:
+                entry['max'] = value
+            if entry['min'] is None or value < entry['min']:
+                entry['min'] = value
+
+        results = []
+        for symbol, data in groups.items():
+            if agg_func == 'AVG':
+                result_value = data['sum'] / data['count'] if data['count'] else 0.0
+            elif agg_func == 'MAX':
+                result_value = data['max']
+            elif agg_func == 'MIN':
+                result_value = data['min']
+            elif agg_func == 'SUM':
+                result_value = data['sum']
+            else:
+                continue
+            results.append({'symbol': symbol, 'value': result_value})
+
+        if order_expr:
+            expr = order_expr.strip()
+            if 'SYMBOL' in expr.upper():
+                results.sort(key=lambda item: item['symbol'], reverse=order_desc)
+            else:
+                results.sort(key=lambda item: item['value'], reverse=order_desc)
+        else:
+            results.sort(key=lambda item: item['symbol'])
+
+        if limit:
+            results = results[:limit]
+
+        lines = [
+            f"symbol>>{item['symbol']} {agg_func.lower()}({agg_field})>>{item['value']}"
+            for item in results
+        ]
+        return lines
+
+    def _numpy_filter_indices(self, indices, conditions, numpy_data):
+        idx = np.array(indices, copy=True)
+        for condition in conditions:
+            if condition['type'] == 'like':
+                return None
+            field = condition['field']
+            arr = numpy_data.get(field)
+            if arr is None:
+                return None
+            values = arr[idx]
+            op = condition['operator']
+            value = condition['value']
+            ctype = condition['type']
+            mask = None
+            if op == '=':
+                mask = values == value
+            elif op == '!=':
+                mask = values != value
+            elif ctype in ('int', 'float'):
+                if value is None:
+                    return None
+                if op == '>':
+                    mask = values > value
+                elif op == '<':
+                    mask = values < value
+                elif op == '>=':
+                    mask = values >= value
+                elif op == '<=':
+                    mask = values <= value
+                else:
+                    return None
+            else:
+                # string comparisons support only equality
+                return None
+
+            if ctype == 'float':
+                mask = mask & ~np.isnan(values)
+
+            if mask is None:
+                return None
+
+            idx = idx[mask.astype(bool)]
+            if idx.size == 0:
+                return idx
+
+        return idx
+
+    def _numpy_apply_order(self, indices, order_expr, order_desc, numpy_data):
+        if indices.size == 0:
+            return indices
+
+        if order_expr:
+            token = order_expr.strip().split()[0]
+            if '(' in token:
+                return None
+            order_field = token.strip('"').lower()
+        else:
+            order_field = 'timestamp'
+
+        arr = numpy_data.get(order_field)
+        if arr is None:
+            return None
+
+        values = arr[indices]
+        order = np.argsort(values, kind='mergesort')
+        if order_desc:
+            order = order[::-1]
+        return indices[order]
+
+    def _numpy_execute(self, query, query_upper, cache, limit, conditions, order_desc):
+        numpy_data = cache.get('numpy')
+        if numpy_data is None:
+            return None
+
+        symbol_indices_np = cache.get('symbol_indices_np') or {}
+        all_indices = cache.get('all_indices')
+
+        symbol_condition = None
+        for condition in conditions:
+            if condition['field'] == 'symbol' and condition['operator'] == '=':
+                symbol_condition = condition
+                break
+
+        if symbol_condition:
+            idx = symbol_indices_np.get(symbol_condition['value'])
+            if idx is None:
+                return []
+            remaining_conditions = [c for c in conditions if c is not symbol_condition]
+        else:
+            idx = all_indices
+            remaining_conditions = conditions
+
+        if idx is None:
+            return []
+
+        idx = np.array(idx, copy=True)
+
+        if remaining_conditions:
+            filtered = self._numpy_filter_indices(idx, remaining_conditions, numpy_data)
+            if filtered is None:
+                return None
+            idx = filtered
+
+        if idx.size == 0:
+            return []
+
+        order_expr = self._extract_order_expression(query)
+        records = cache['records']
+
+        if 'COUNT(*)' in query_upper:
+            return [f"{idx.size} {cache['db']}"]
+
+        if 'GROUP BY' in query_upper:
+            records_subset = [records[int(i)] for i in idx.tolist()]
+            result = self._handle_group_query(query, query_upper, records_subset, order_expr, order_desc, limit)
+            if result is None:
+                return None
+            return result
+
+        idx = self._numpy_apply_order(idx, order_expr, order_desc, numpy_data)
+        if idx is None:
+            return None
+
+        if limit:
+            idx = idx[:limit]
+
+        lines = cache['lines']
+        return [lines[int(i)] for i in idx.tolist()]
+
+    def _execute_cached_query(self, query, query_upper, db_path, limit, where_clause, order_desc):
+        if not self.cache_enabled:
+            return None
+
+        self._ensure_cache(db_path)
+        if not self._cache:
+            return None
+
+        cache = self._cache
+        records = cache['records']
+        conditions = self._parse_conditions(where_clause)
+
+        numpy_result = self._numpy_execute(query, query_upper, cache, limit, conditions, order_desc)
+        if numpy_result is not None:
+            return numpy_result
+
+        symbol_cache = cache.setdefault('symbol_cache', {})
+
+        symbol_condition = None
+        for condition in conditions:
+            if condition['field'] == 'symbol' and condition['operator'] == '=':
+                symbol_condition = condition
+                break
+
+        if symbol_condition:
+            indices = cache['symbol_map'].get(symbol_condition['value'], [])
+            records_subset = [records[idx] for idx in indices]
+            conditions = [cond for cond in conditions if cond is not symbol_condition]
+        else:
+            records_subset = list(records)
+
+        if conditions:
+            records_subset = [rec for rec in records_subset if self._record_matches(rec, conditions)]
+
+        order_expr = self._extract_order_expression(query)
+
+        symbol_key = None
+        if symbol_condition and not conditions and 'GROUP BY' not in query_upper and 'COUNT(*)' not in query_upper:
+            symbol_key = (symbol_condition['value'], order_expr or '', order_desc)
+            cache_entry = symbol_cache.get(symbol_key)
+            if cache_entry is not None:
+                if limit:
+                    cached_limited = cache_entry['limits'].get(limit)
+                    if cached_limited is None:
+                        cached_limited = cache_entry['full'][:limit]
+                        cache_entry['limits'][limit] = cached_limited
+                    return cached_limited
+                return cache_entry['full']
+
+        if 'GROUP BY' in query_upper:
+            grouped = self._handle_group_query(query, query_upper, records_subset, order_expr, order_desc, limit)
+            if grouped is not None:
+                return grouped
+
+        if 'COUNT(*)' in query_upper:
+            return [f"{len(records_subset)} {db_path}"]
+
+        ordered_records = self._apply_order(records_subset, order_expr, order_desc)
+
+        lines_full = [rec['_line'] for rec in ordered_records]
+        if symbol_key is not None:
+            entry = symbol_cache.setdefault(symbol_key, {'full': tuple(lines_full), 'limits': {}})
+            entry['full'] = tuple(lines_full)
+            if limit:
+                entry['limits'][limit] = entry['full'][:limit]
+                return entry['limits'][limit]
+            return entry['full']
+
+        if limit:
+            return tuple(lines_full[:limit])
+        return tuple(lines_full)
+
+    @staticmethod
+    def _extract_limit(query_upper, default=100):
+        if 'LIMIT' in query_upper:
+            try:
+                return int(query_upper.split('LIMIT')[1].strip().split()[0])
+            except Exception:
+                return default
+        return default
+
+    @staticmethod
+    def _extract_where_clause(query):
+        fragment = query
+        if 'WHERE' in query.upper():
+            try:
+                fragment = query.split('WHERE', 1)[1]
+                fragment = fragment.split('ORDER', 1)[0]
+                fragment = fragment.split('LIMIT', 1)[0]
+                return fragment.strip()
+            except Exception:
+                return None
+        return None
+
+    @staticmethod
+    def _determine_sort_direction(query_upper):
+        if 'ORDER BY' in query_upper:
+            tail = query_upper.split('ORDER BY', 1)[1]
+            tail = tail.split('LIMIT')[0]
+            if 'DESC' in tail:
+                return True
+            if 'ASC' in tail:
+                return False
+        return True
+
+    def execute_query(self, query, database=None):
+        """Execute a SAIQL query directly on the file."""
+        db = self._resolve_db(database)
+
+        if not os.path.exists(db):
+            print(f"Error: Database not found: {db}")
+            print(f"Tip: Set SAIQL_DEFAULT_DB environment variable or specify database with -d")
+            return ()
+
+        query_upper = query.upper()
+
+        query_cache = None
+        if self.cache_enabled and self._cache:
+            query_cache = self._cache.setdefault('query_cache', {})
+            cached_result = query_cache.get(query)
+            if cached_result is not None:
+                return cached_result
+
+        limit = self._extract_limit(query_upper)
+        where_clause = self._extract_where_clause(query)
+        order_desc = self._determine_sort_direction(query_upper)
+
+        result = self._execute_cached_query(query, query_upper, db, limit, where_clause, order_desc)
+
+        if result is None:
+            result = self._fallback_query(db, query_upper, where_clause, limit, order_desc)
+
+        result_tuple = result if isinstance(result, tuple) else tuple(result or [])
+
+        if query_cache is not None:
+            query_cache[query] = result_tuple
+
+        return result_tuple
+
+    def _fallback_query(self, db, query_upper, where_clause, limit, order_desc):
+        """Fallback to shell commands for unsupported queries."""
+        cmd = None
+
+        if where_clause:
+            if '=' in where_clause:
+                field, value = where_clause.split('=', 1)
+                field = field.strip()
+                value = value.strip().strip("'\"")
+
+                if field.lower().strip('"') == 'symbol':
+                    rows = self._query_symbol_fast(db, value, limit, order_desc=order_desc)
+                    if rows:
+                        return rows[:limit] if limit else rows
+
+                search_pattern = f"{field}>>{value}"
+                cmd = f"grep '{search_pattern}' {db} | head -{limit}"
+            elif 'LIKE' in where_clause.upper():
+                field, pattern = where_clause.upper().split('LIKE', 1)
+                field = field.strip()
+                pattern = pattern.strip().strip("'\"").replace('%', '.*')
+                cmd = f"grep -E '{field}>>{pattern}' {db} | head -{limit}"
+            else:
+                cmd = f"grep '{where_clause}' {db} | head -{limit}"
+        else:
+            if 'COUNT(*)' in query_upper:
+                cmd = f"wc -l {db}"
+            else:
+                cmd = f"head -{limit} {db}"
+
+        return self._run_shell(cmd) if cmd else ()
+
+    def _run_shell(self, cmd):
+        try:
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            if result.returncode == 0:
+                output = result.stdout.strip()
+                if output:
+                    return output.split('\n')
+            return ()
+        except Exception as e:
+            print(f"Error executing query: {e}")
+            return ()
+
+
+    def interactive_mode(self):
+        """Run in interactive mode"""
+        print("SAIQL Interactive Mode (type 'exit' to quit)")
+        print(f"Using database: {self.database_path or self.default_db}")
+        print()
+        
+        while True:
+            try:
+                query = input("saiql> ").strip()
+                if query.lower() in ['exit', 'quit', '\\q']:
+                    break
+                if query:
+                    results = self.execute_query(query)
+                    for row in results:
+                        print(row)
+                    print(f"\n({len(results)} rows)")
+            except KeyboardInterrupt:
+                print("\nExiting...")
+                break
+            except Exception as e:
+                print(f"Error: {e}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description='SAIQL Direct Query Interface')
+    parser.add_argument('-d', '--database', help='Database file path')
+    parser.add_argument('-q', '--query', help='Query to execute')
+    parser.add_argument('-i', '--interactive', action='store_true', help='Interactive mode')
+    parser.add_argument('-v', '--version', action='store_true', help='Show version')
+    parser.add_argument('--stdin', action='store_true', help='Stream queries from stdin using in-memory cache')
+    parser.add_argument('--warm-cache', action='store_true', help='Load database into cache before executing query')
+    parser.add_argument('--quiet', action='store_true', help='Suppress per-row output')
+    
+    args = parser.parse_args()
+    
+    if args.version:
+        print("SAIQL Echo CLI v5.0.0")
+        return
+    
+    saiql = SAIQL(args.database)
+    
+    if args.stdin or args.warm_cache:
+        saiql.cache_enabled = True
+        db = saiql._resolve_db(args.database)
+        saiql._ensure_cache(db)
+        if not saiql._cache:
+            print(f"Error: Unable to load cache for {db}")
+            return
+
+    if args.stdin:
+        db = saiql._resolve_db(args.database)
+        if not args.quiet:
+            print(f"SAIQL stream mode ready on {db}", file=sys.stderr)
+        for line in sys.stdin:
+            query = line.strip()
+            if not query:
+                continue
+            if query.lower() in ['exit', 'quit', '\\q']:
+                break
+            results = saiql.execute_query(query, database=db)
+            if not args.quiet:
+                for row in results:
+                    print(row)
+                print(f"({len(results)} rows)")
+                sys.stdout.flush()
+        return
+
+    if args.interactive or (not args.query):
+        saiql.interactive_mode()
+    elif args.query:
+        results = saiql.execute_query(args.query)
+        if not args.quiet:
+            for row in results:
+                print(row)
+        if not results and not args.quiet:
+            print("(0 rows)")
+
+if __name__ == "__main__":
+    main()

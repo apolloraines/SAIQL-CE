@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+import sys
+
+SYMBOLS = {
+    '₿': 'BTC', 'Ξ': 'ETH', '◎': 'SOL', '✕': 'XRP',
+    'Ð': 'DOGE', '₳': 'ADA', '△': 'AVAX', '●': 'DOT',
+    '▽': 'MATIC', '⬡': 'LINK', '✓': 'ACTIVE', '✗': 'INACTIVE',
+    '⟆': 'LT', '»': '|'
+}
+
+def count_symbolic(text):
+    # Count lines, words, chars, and symbols
+    lines = text.count('\n')
+    words = len(text.split())
+    chars = len(text)
+    
+    # Count unique symbols
+    symbol_count = 0
+    for sym in SYMBOLS.keys():
+        symbol_count += text.count(sym)
+    
+    return lines, words, chars, symbol_count
+
+# Handle file argument or stdin
+if len(sys.argv) > 1:
+    file_path = sys.argv[1]
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            lines, words, chars, symbols = count_symbolic(content)
+            print(f"  {lines}  {words}  {chars}  {symbols} symbols  {file_path}")
+    except FileNotFoundError:
+        print(f"Error: File '{file_path}' not found", file=sys.stderr)
+        sys.exit(1)
+else:
+    # Read from stdin
+    content = sys.stdin.read()
+    lines, words, chars, symbols = count_symbolic(content)
+    print(f"  {lines}  {words}  {chars}  {symbols} symbols")

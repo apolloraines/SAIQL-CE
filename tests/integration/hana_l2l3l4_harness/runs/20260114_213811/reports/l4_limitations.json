@@ -1,0 +1,14 @@
+{
+  "level": "L4",
+  "object_type": "triggers",
+  "total_count": 0,
+  "supported": {
+    "count": 0,
+    "names": [],
+    "criteria": "BEFORE INSERT/UPDATE with simple normalization (UPPER/LOWER/TRIM)"
+  },
+  "unsupported": {
+    "count": 0,
+    "triggers": []
+  }
+}

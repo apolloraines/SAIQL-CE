@@ -1,0 +1,40 @@
+# SAIQL Community Edition Dependencies
+# Install with: pip install -r requirements-ce.txt
+#
+# This file contains ONLY dependencies needed for CE.
+# Heavy AI/ML dependencies (torch, transformers, etc.) are NOT included.
+
+# Core functionality
+psutil>=5.9.0
+numpy>=1.24.0
+pyyaml>=6.0
+
+# CLI UI
+rich>=13.0.0
+
+# Database adapters
+SQLAlchemy>=2.0.0
+psycopg2-binary          # PostgreSQL
+mysql-connector-python   # MySQL
+PyMySQL                  # MySQL alternative
+pymssql                  # SQL Server
+oracledb>=2.0.0         # Oracle
+duckdb-engine           # DuckDB
+duckdb                  # DuckDB
+
+# Security
+cryptography
+
+# File format support (CE-safe)
+openpyxl>=3.1.0         # Excel files
+
+# Development/Testing
+pytest>=7.0.0
+black>=23.0.0
+flake8>=6.0.0
+
+# Note: The following are NOT included in CE:
+# - torch, sentence-transformers, llama-cpp-python (Atlas/Carl)
+# - transformers, peft, datasets, accelerate, bitsandbytes (Training)
+# - pytesseract, pdf2image, Pillow (OCR)
+# - pypdf, pdfplumber, python-docx, python-pptx, striprtf (Document extraction)

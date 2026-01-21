@@ -1,0 +1,31 @@
+{
+  "level": "L4",
+  "object_type": "triggers",
+  "total_count": 3,
+  "supported": {
+    "count": 0,
+    "names": []
+  },
+  "unsupported": {
+    "count": 3,
+    "triggers": [
+      {
+        "name": "trg_order_audit",
+        "reason": "AFTER triggers not in supported subset (only BEFORE INSERT/UPDATE)"
+      },
+      {
+        "name": "trg_trim_email",
+        "reason": "Contains loops or cursors (not in supported subset)"
+      },
+      {
+        "name": "trg_upper_lastname",
+        "reason": "Contains loops or cursors (not in supported subset)"
+      }
+    ]
+  },
+  "limitations": [
+    "Only BEFORE INSERT/UPDATE with simple normalization supported",
+    "AFTER triggers NOT supported",
+    "Triggers with DML operations NOT supported"
+  ]
+}

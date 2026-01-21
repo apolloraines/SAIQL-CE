@@ -1,0 +1,10 @@
+# Actual secrets - never commit these!
+jwt_secret.key
+api_keys.json
+secrets.enc
+users.json
+
+# Keep templates
+!*.template
+!*.md
+!setup_security.sh

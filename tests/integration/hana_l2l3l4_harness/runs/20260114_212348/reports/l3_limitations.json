@@ -1,0 +1,12 @@
+{
+  "level": "L3",
+  "object_type": "routines",
+  "procedure_count": 5,
+  "function_count": 2,
+  "unsupported_count": 0,
+  "limitations": [
+    "AMDP (ABAP Managed Database Procedures) NOT supported",
+    "Only SQLScript/SQL routines extracted",
+    "Complex dependencies may not be fully resolved"
+  ]
+}

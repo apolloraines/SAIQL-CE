@@ -1,0 +1,97 @@
+{
+  "default_backend": "sqlite",
+  "backends": {
+    "sqlite": {
+      "type": "sqlite",
+      "path": "data/lore_store.db",
+      "timeout": 30,
+      "journal_mode": "WAL",
+      "synchronous": "NORMAL",
+      "cache_size": 2000,
+      "temp_store": "memory"
+    },
+    "postgresql": {
+      "type": "postgresql",
+      "host": "localhost",
+      "port": 5432,
+      "database": "saiql",
+      "user": "saiql_user",
+      "password": "${PG_PASSWORD}",
+      "min_connections": 2,
+      "max_connections": 20,
+      "connection_timeout": 30,
+      "statement_timeout": 300,
+      "idle_in_transaction_timeout": 60,
+      "ssl_mode": "require",
+      "ssl_verify": true,
+      "application_name": "SAIQL-Bravo",
+      "search_path": "public",
+      "max_retries": 3,
+      "retry_delay": 1.0
+    },
+    "postgresql_production": {
+      "type": "postgresql",
+      "host": "${PG_HOST}",
+      "port": "${PG_PORT:5432}",
+      "database": "${PG_DATABASE}",
+      "user": "${PG_USER}",
+      "password": "${PG_PASSWORD}",
+      "min_connections": 5,
+      "max_connections": 50,
+      "connection_timeout": 10,
+      "statement_timeout": 600,
+      "idle_in_transaction_timeout": 120,
+      "ssl_mode": "require",
+      "ssl_cert": "${PG_SSL_CERT}",
+      "ssl_key": "${PG_SSL_KEY}",
+      "ssl_ca": "${PG_SSL_CA}",
+      "application_name": "SAIQL-Bravo-Production",
+      "search_path": "saiql,public",
+      "max_retries": 5,
+      "retry_delay": 2.0
+    },
+    "mysql": {
+      "type": "mysql",
+      "host": "localhost",
+      "port": 3306,
+      "database": "saiql",
+      "user": "saiql_user",
+      "password": "${MYSQL_PASSWORD}",
+      "charset": "utf8mb4",
+      "use_unicode": true,
+      "autocommit": false,
+      "pool_size": 20,
+      "pool_reset_session": true,
+      "connection_timeout": 30,
+      "max_retries": 3
+    }
+  },
+  "connection_pools": {
+    "enable_pooling": true,
+    "pool_pre_ping": true,
+    "pool_recycle": 3600,
+    "pool_timeout": 30,
+    "max_overflow": 10
+  },
+  "query_settings": {
+    "default_timeout": 300,
+    "max_query_length": 1048576,
+    "enable_query_cache": true,
+    "query_cache_size": 1000,
+    "prepared_statement_cache_size": 100
+  },
+  "monitoring": {
+    "enable_metrics": true,
+    "slow_query_threshold": 5.0,
+    "log_queries": false,
+    "log_slow_queries": true,
+    "track_connection_stats": true
+  },
+  "security": {
+    "enable_ssl": true,
+    "verify_ssl_cert": true,
+    "encrypt_passwords": true,
+    "allowed_schemas": ["public", "saiql"],
+    "restricted_functions": ["pg_read_file", "pg_write_file", "copy"]
+  }
+}

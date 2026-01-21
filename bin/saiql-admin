@@ -1,0 +1,135 @@
+#!/usr/bin/env python3
+"""
+SAIQL Admin Interface
+Command-line tool for managing users, keys, and security.
+"""
+
+import sys
+import os
+import argparse
+import getpass
+from pathlib import Path
+from typing import List
+
+# Add SAIQL root to path
+SAIQL_ROOT = Path(__file__).parent.parent.resolve()
+sys.path.insert(0, str(SAIQL_ROOT))
+
+try:
+    from security.auth_manager import AuthManager, UserRole
+except ImportError as e:
+    sys.stderr.write(f"Error: Could not import SAIQL security modules. Run from SAIQL root or install saiql.\n{e}\n")
+    sys.exit(1)
+
+def cmd_create_user(auth: AuthManager, args):
+    """Create a new user"""
+    print(f"Creating user '{args.username}'...")
+    
+    # Parse roles
+    roles = []
+    for r in args.roles.split(','):
+        try:
+            roles.append(UserRole(r.strip()))
+        except ValueError:
+            print(f"Error: Invalid role '{r}'. Valid roles: {[e.value for e in UserRole]}")
+            return
+
+    try:
+        user = auth.create_user(
+            username=args.username,
+            email=args.email,
+            roles=roles
+        )
+        print(f"✅ User created: {user.user_id}")
+        
+        # Set password
+        if args.password:
+            password = args.password
+        else:
+            password = getpass.getpass(f"Enter password for {args.username}: ")
+            confirm = getpass.getpass("Confirm password: ")
+            if password != confirm:
+                print("❌ Passwords do not match.")
+                # Note: User is already created. Might want to delete or warn.
+                print("Warning: User created but password not set.")
+                return
+
+        if auth.set_password(user.user_id, password):
+            print("✅ Password set successfully.")
+        else:
+            print("❌ Failed to set password.")
+            
+    except Exception as e:
+        print(f"❌ Error creating user: {e}")
+
+def cmd_reset_password(auth: AuthManager, args):
+    """Reset a user's password"""
+    # Find user ID from username
+    user = next((u for u in auth.users.values() if u.username == args.username), None)
+    if not user:
+        print(f"❌ User '{args.username}' not found.")
+        return
+
+    password = args.password
+    if not password:
+        password = getpass.getpass(f"Enter new password for {args.username}: ")
+        confirm = getpass.getpass("Confirm password: ")
+        if password != confirm:
+            print("❌ Passwords do not match.")
+            return
+
+    if auth.set_password(user.user_id, password):
+        print(f"✅ Password for '{args.username}' updated.")
+    else:
+        print("❌ Failed to update password.")
+
+def cmd_list_users(auth: AuthManager, args):
+    """List all users"""
+    print(f"{'USERNAME':<20} {'USER ID':<20} {'ROLES':<30} {'ACTIVE'}")
+    print("-" * 80)
+    for user in auth.users.values():
+        roles = ",".join([r.value for r in user.roles])
+        print(f"{user.username:<20} {user.user_id:<20} {roles:<30} {user.is_active}")
+
+def main():
+    parser = argparse.ArgumentParser(description="SAIQL Administration Tool")
+    subparsers = parser.add_subparsers(dest="command", help="Command to run")
+
+    # create-user
+    p_create = subparsers.add_parser("create-user", help="Create a new user")
+    p_create.add_argument("username", help="Username")
+    p_create.add_argument("--email", required=True, help="User email")
+    p_create.add_argument("--roles", default="read_write", help="Comma-separated roles (admin, read_write, read_only)")
+    p_create.add_argument("--password", help="Password (will prompt if omitted)")
+
+    # reset-password
+    p_reset = subparsers.add_parser("reset-password", help="Reset user password")
+    p_reset.add_argument("username", help="Username")
+    p_reset.add_argument("--password", help="New password")
+
+    # list-users
+    p_list = subparsers.add_parser("list-users", help="List registered users")
+
+    args = parser.parse_args()
+
+    if not args.command:
+        parser.print_help()
+        sys.exit(1)
+
+    # Initialize Auth Manager
+    try:
+        auth = AuthManager()
+    except Exception as e:
+        print(f"Error initializing AuthManager: {e}")
+        print("Ensure you have run setup_security.sh or have proper permissions.")
+        sys.exit(1)
+
+    if args.command == "create-user":
+        cmd_create_user(auth, args)
+    elif args.command == "reset-password":
+        cmd_reset_password(auth, args)
+    elif args.command == "list-users":
+        cmd_list_users(auth, args)
+
+if __name__ == "__main__":
+    main()

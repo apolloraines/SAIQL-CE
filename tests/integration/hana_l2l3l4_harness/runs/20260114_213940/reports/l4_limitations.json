@@ -1,0 +1,22 @@
+{
+  "level": "L4",
+  "object_type": "triggers",
+  "total_count": 3,
+  "supported": {
+    "count": 2,
+    "names": [
+      "trg_trim_email",
+      "trg_upper_lastname"
+    ],
+    "criteria": "BEFORE INSERT/UPDATE with simple normalization (UPPER/LOWER/TRIM)"
+  },
+  "unsupported": {
+    "count": 1,
+    "triggers": [
+      {
+        "name": "trg_order_audit",
+        "reason": "AFTER triggers not in supported subset (only BEFORE INSERT/UPDATE)"
+      }
+    ]
+  }
+}

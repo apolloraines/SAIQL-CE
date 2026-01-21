@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+import sys
+
+SYMBOLS = {
+    'BTC-USD': '₿', 'ETH-USD': 'Ξ', 'SOL-USD': '◎', 'XRP-USD': '✕',
+    'DOGE-USD': 'Ð', 'ADA-USD': '₳', 'AVAX-USD': '△', 'DOT-USD': '●',
+    'MATIC-USD': '▽', 'LINK-USD': '⬡', 'ACTIVE': '✓', 'INACTIVE': '✗',
+    'symbol': '§', 'timestamp': '⏱', 'open': '↗', 'high': '⤊',
+    'low': '⤋', 'close': '↘', 'volume': '▣', 'granularity': '⌘'
+}
+
+def to_human(line):
+    # Symbol to human mapping (reverse of SYMBOLS)
+    translations = {
+        '₿': 'BTC-USD', 'Ξ': 'ETH-USD', '◎': 'SOL-USD', '✕': 'XRP-USD',
+        'Ð': 'DOGE-USD', '₳': 'ADA-USD', '△': 'AVAX-USD', '●': 'DOT-USD',
+        '▽': 'MATIC-USD', '⬡': 'LINK-USD', '✓': 'ACTIVE', '✗': 'INACTIVE',
+        '§': 'symbol', '⏱': 'timestamp', '↗': 'open', '⤊': 'high',
+        '⤋': 'low', '↘': 'close', '▣': 'volume', '⌘': 'granularity',
+        '⟆': 'LORETOKEN.', '⟐': 'RECORD', '»': '>>'
+    }
+    for sym, meaning in translations.items():
+        line = line.replace(sym, meaning)
+    return line
+
+def to_symbolic(line):
+    for meaning, sym in [(v,k) for k,v in SYMBOLS.items()]:
+        line = line.replace(meaning, sym)
+    return line
+
+# Handle both file argument and stdin
+if len(sys.argv) > 1:
+    # Read from file
+    try:
+        with open(sys.argv[1], 'r', encoding='utf-8') as f:
+            for line in f:
+                print(to_human(line.rstrip()))
+    except FileNotFoundError:
+        print(f"Error: File '{sys.argv[1]}' not found", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+else:
+    # Read from stdin
+    for line in sys.stdin:
+        print(to_human(line.rstrip()))

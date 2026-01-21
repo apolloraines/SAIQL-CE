@@ -1,0 +1,10 @@
+{
+  "level": "L2",
+  "object_type": "views",
+  "supported_count": 0,
+  "unsupported_count": 0,
+  "limitations": [
+    "Calculation Views (HDI/repository artifacts) NOT supported",
+    "Only catalog-based SQL views extracted"
+  ]
+}

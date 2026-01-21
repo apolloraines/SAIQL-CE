@@ -1,0 +1,391 @@
+openapi: 3.0.3
+info:
+  title: SAIQL-Delta API (Community Edition)
+  description: |
+    Semantic AI Query Language Database System - Community Edition
+
+    SAIQL-Delta CE provides a modern semantic database interface with
+    query processing and multi-backend support.
+
+    ## Features
+    - **Semantic Query Language**: Advanced symbolic query syntax
+    - **Multi-Database Support**: PostgreSQL, MySQL, SQLite, MongoDB, Redis adapters
+    - **Real-time Metrics**: Prometheus-compatible monitoring
+    - **Security**: JWT authentication, RBAC, rate limiting
+
+    ## Quick Start
+    1. Authenticate using `/auth/token` endpoint
+    2. Submit queries via `/api/v1/query`
+    3. Monitor performance via `/metrics`
+
+    ## SAIQL Query Syntax Examples
+    ```
+    *10[users]::name,email>>oQ                    # Select 10 users
+    *[products]::*|price>100>>oQ                  # Filter by price
+    *[logs]::*|created_at>RECENT(24h)>>oQ         # Recent data
+    ```
+  version: 2.0.0-ce
+  contact:
+    name: SAIQL Project
+    url: https://github.com/saiql/saiql-delta
+    email: support@saiql.dev
+  license:
+    name: Open Lore License (OLL) v1.0
+    url: https://openlorelicense.com/
+
+servers:
+  - url: http://localhost:8000
+    description: Development server
+
+paths:
+  # Health and Status Endpoints
+  /health:
+    get:
+      summary: Health Check
+      description: Check overall system health
+      tags: [Health]
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /health/ready:
+    get:
+      summary: Readiness Check
+      description: Check if system is ready to serve requests
+      tags: [Health]
+      responses:
+        '200':
+          description: System is ready
+        '503':
+          description: System is not ready
+
+  /health/live:
+    get:
+      summary: Liveness Check
+      description: Check if system is alive
+      tags: [Health]
+      responses:
+        '200':
+          description: System is alive
+
+  /metrics:
+    get:
+      summary: Prometheus Metrics
+      description: Get Prometheus-compatible metrics
+      tags: [Monitoring]
+      responses:
+        '200':
+          description: Prometheus metrics
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  # Core SAIQL API
+  /api/v1/query:
+    post:
+      summary: Execute SAIQL Query
+      description: |
+        Execute a SAIQL query against the configured database backend.
+
+        Supports:
+        - Semantic query language syntax
+        - Multiple database backends
+        - Performance optimization
+        - Real-time execution metrics
+      tags: [Query Execution]
+      security:
+        - bearerAuth: []
+        - apiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRequest'
+            examples:
+              simple_select:
+                summary: Simple SELECT query
+                value:
+                  query: "*10[users]::name,email>>oQ"
+                  backend: "postgresql"
+              filtered_query:
+                summary: Filtered query with conditions
+                value:
+                  query: "*[products]::name,price|category='electronics'>>oQ"
+                  options:
+                    optimize: true
+                    explain: true
+      responses:
+        '200':
+          description: Query executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+        '400':
+          description: Invalid query syntax
+        '401':
+          description: Authentication required
+        '403':
+          description: Insufficient permissions
+        '500':
+          description: Query execution error
+
+  /api/v1/parse:
+    post:
+      summary: Parse SAIQL Query
+      description: Parse and validate SAIQL query syntax without execution
+      tags: [Query Processing]
+      security:
+        - bearerAuth: []
+        - apiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: SAIQL query to parse
+              required: [query]
+      responses:
+        '200':
+          description: Parse result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParseResponse'
+
+  /api/v1/metrics:
+    get:
+      summary: System Metrics
+      description: Get detailed system performance metrics
+      tags: [Monitoring]
+      security:
+        - bearerAuth: []
+        - apiKeyAuth: []
+      responses:
+        '200':
+          description: System metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResponse'
+
+  # Authentication Endpoints
+  /auth/token:
+    post:
+      summary: Get Authentication Token
+      description: Authenticate and receive JWT token
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+        uptime:
+          type: number
+        components:
+          type: object
+          properties:
+            database:
+              type: string
+              enum: [healthy, unhealthy, unknown]
+            auth_system:
+              type: string
+              enum: [healthy, unhealthy, unknown]
+
+    QueryRequest:
+      type: object
+      properties:
+        query:
+          type: string
+          description: SAIQL query string
+          example: "*10[users]::name,email>>oQ"
+        backend:
+          type: string
+          description: Database backend to use
+          enum: [sqlite, postgresql, mysql, mongodb, redis]
+          default: sqlite
+        options:
+          type: object
+          properties:
+            optimize:
+              type: boolean
+              default: true
+            explain:
+              type: boolean
+              default: false
+            timeout:
+              type: integer
+              minimum: 1
+              maximum: 300
+              default: 30
+      required: [query]
+
+    QueryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            type: object
+        rows_affected:
+          type: integer
+        execution_time:
+          type: number
+        backend:
+          type: string
+        sql_generated:
+          type: string
+        metrics:
+          type: object
+          properties:
+            compilation_time:
+              type: number
+            execution_time_db:
+              type: number
+            optimization_applied:
+              type: boolean
+        error:
+          type: string
+          nullable: true
+
+    ParseResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        ast:
+          type: object
+        symbols_used:
+          type: array
+          items:
+            type: string
+        sql_preview:
+          type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        errors:
+          type: array
+          items:
+            type: string
+
+    MetricsResponse:
+      type: object
+      properties:
+        system:
+          type: object
+          properties:
+            uptime:
+              type: number
+            memory_usage:
+              type: number
+            cpu_usage:
+              type: number
+        database:
+          type: object
+          properties:
+            total_queries:
+              type: integer
+            successful_queries:
+              type: integer
+            failed_queries:
+              type: integer
+            avg_execution_time:
+              type: number
+        security:
+          type: object
+          properties:
+            active_sessions:
+              type: integer
+            failed_auth_attempts:
+              type: integer
+            rate_limit_hits:
+              type: integer
+
+    AuthRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        api_key:
+          type: string
+      oneOf:
+        - required: [username, password]
+        - required: [api_key]
+
+    AuthResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+        expires_in:
+          type: integer
+        user_id:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+
+tags:
+  - name: Health
+    description: Health check and status endpoints
+  - name: Query Execution
+    description: SAIQL query execution and processing
+  - name: Query Processing
+    description: Query parsing and analysis
+  - name: Monitoring
+    description: System metrics and performance monitoring
+  - name: Authentication
+    description: Authentication and authorization

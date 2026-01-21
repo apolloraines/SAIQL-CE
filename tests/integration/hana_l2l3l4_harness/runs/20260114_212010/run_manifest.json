@@ -1,0 +1,26 @@
+{
+  "run_id": "20260114_212010",
+  "start_time": "2026-01-14T21:20:10.913890",
+  "end_time": "2026-01-14T21:20:11.253709",
+  "duration_seconds": 0.339819,
+  "hana_version": "2.00.088.00.1760424921",
+  "schema": "SAIQL_L2L3L4_TEST",
+  "privileges_summary": [
+    "SELECT on SYS.VIEWS: OK",
+    "CATALOG READ: OK"
+  ],
+  "seed_hash": "unknown",
+  "results": {
+    "a0_connectivity": "PASS",
+    "b2_emission": "PASS",
+    "b2_dependency_order": [],
+    "b4_limitations": "PASS",
+    "d1_subset_definition": "PASS",
+    "d1_supported_triggers": 0,
+    "d1_unsupported_triggers": 0,
+    "d3_emission": "PASS",
+    "d4_unsupported_classification": "SKIP",
+    "d4_unsupported_note": "Trigger trg_order_audit not found",
+    "d5_limitations": "PASS"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "run_id": "20260114_213811",
+  "start_time": "2026-01-14T21:38:11.867755",
+  "end_time": "2026-01-14T21:38:12.467643",
+  "duration_seconds": 0.599888,
+  "hana_version": "2.00.088.00.1760424921",
+  "schema": "SAIQL_L2L3L4_20260114_213811",
+  "privileges_summary": [
+    "SELECT on SYS.VIEWS: OK",
+    "CATALOG READ: OK"
+  ],
+  "seed_hash": "unknown",
+  "results": {
+    "a0_connectivity": "PASS",
+    "b2_emission": "PASS",
+    "b2_dependency_order": [],
+    "b3_presence_parity": "PASS",
+    "b4_limitations": "PASS",
+    "c4_limitations": "PASS",
+    "d3_emission": "PASS",
+    "d4_unsupported_classification": "SKIP",
+    "d5_limitations": "PASS",
+    "e1_validation_report": "PASS",
+    "e2_parity_summary": "PASS"
+  }
+}

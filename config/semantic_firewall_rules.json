@@ -1,0 +1,68 @@
+{
+    "version": "1.0",
+    "rules": {
+        "injection": [
+            {
+                "id": "INJ_001",
+                "pattern": "(?i)(ignore|disregard)\\s+(all\\s+)?(previous|prior)\\s+(instructions|commands|rules)",
+                "action": "BLOCK",
+                "reason": "INJECTION_ATTEMPT"
+            },
+            {
+                "id": "INJ_002",
+                "pattern": "(?i)you\\s+are\\s+now\\s+(acting\\s+as|in\\s+mode)",
+                "action": "BLOCK",
+                "reason": "INJECTION_ATTEMPT"
+            },
+            {
+                "id": "INJ_003",
+                "pattern": "(?i)system\\s+override",
+                "action": "BLOCK",
+                "reason": "INJECTION_ATTEMPT"
+            }
+        ],
+        "system_prompt": [
+            {
+                "id": "SYS_001",
+                "pattern": "(?i)(repeat|reveal|show|print|dump)\\s+(all\\s+)?(of\\s+)?(the\\s+)?(system\\s+(prompt|instructions)|initial\\s+instructions|hidden\\s+rules)",
+                "action": "BLOCK",
+                "reason": "SYSTEM_PROMPT_REQUEST"
+            },
+            {
+                "id": "SYS_002",
+                "pattern": "(?i)what\\s+are\\s+your\\s+(instructions|rules|directives)",
+                "action": "BLOCK",
+                "reason": "SYSTEM_PROMPT_REQUEST"
+            }
+        ],
+        "secrets": [
+            {
+                "id": "SEC_001",
+                "pattern": "(?i)(api[_-]?key|access[_-]?token|secret[_-]?key)\\s*[:=]\\s*['\"]?[a-zA-Z0-9_\\-]{20,}['\"]?",
+                "action": "REDACT",
+                "reason": "SECRET_EXFIL",
+                "replacement": "[REDACTED_SECRET]"
+            },
+            {
+                "id": "SEC_002",
+                "pattern": "(?i)sk-[a-zA-Z0-9]{48}",
+                "action": "REDACT",
+                "reason": "SECRET_EXFIL",
+                "replacement": "[REDACTED_API_KEY]"
+            }
+        ],
+        "tool_abuse": [
+            {
+                "id": "TOOL_001",
+                "pattern": "(?i)(force|override)\\s+tool\\s+(call|execution)",
+                "action": "BLOCK",
+                "reason": "TOOL_ABUSE"
+            }
+        ]
+    },
+    "settings": {
+        "default_action": "ALLOW",
+        "redaction_placeholder": "[REDACTED]",
+        "confidence_threshold": 0.9
+    }
+}

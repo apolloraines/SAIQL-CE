@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+"""
+sgrep - Symbolic Grep for LoreToken databases
+Automatically translates queries to search symbolic data
+"""
+
+import sys
+import re
+import os
+
+# Symbol mappings
+SYMBOLS = {
+    'BTC-USD': '₿', 'BTC': '₿',
+    'ETH-USD': 'Ξ', 'ETH': 'Ξ',
+    'SOL-USD': '◎', 'SOL': '◎',
+    'XRP-USD': '✕', 'XRP': '✕',
+    'DOGE-USD': 'Ð', 'DOGE': 'Ð',
+    'ADA-USD': '₳', 'ADA': '₳',
+    'AVAX-USD': '△', 'AVAX': '△',
+    'DOT-USD': '●', 'DOT': '●',
+    'MATIC-USD': '▽', 'MATIC': '▽',
+    'LINK-USD': '⬡', 'LINK': '⬡',
+    'ACTIVE': '✓',
+    'INACTIVE': '✗',
+    '60': '1m',
+    '300': '5m',
+    '3600': '1h',
+    '86400': '1d'
+}
+
+def translate_pattern(pattern):
+    """Translate human pattern to symbolic"""
+    symbolic_pattern = pattern
+    
+    # Replace known terms with symbols
+    for human, symbol in SYMBOLS.items():
+        # Case insensitive replacement
+        symbolic_pattern = re.sub(
+            rf'\b{re.escape(human)}\b', 
+            symbol, 
+            symbolic_pattern, 
+            flags=re.IGNORECASE
+        )
+    
+    return symbolic_pattern
+
+def detect_format(file_path):
+    """Detect if file uses symbolic or regular LoreToken format"""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            first_line = f.readline()
+            # Check for symbolic markers
+            if any(char in first_line for char in ['⟆', '₿', 'Ξ', '◎', '§', '⏱', '↗']):
+                return 'symbolic'
+            elif 'LORETOKEN' in first_line:
+                return 'regular'
+            else:
+                return 'unknown'
+    except:
+        return 'unknown'
+
+def sgrep(pattern, file_path, show_translation=False):
+    """Symbolic grep with automatic format detection"""
+    
+    # Detect file format
+    file_format = detect_format(file_path)
+    
+    if file_format == 'symbolic':
+        # Translate pattern for symbolic files
+        search_pattern = translate_pattern(pattern)
+        if show_translation and pattern != search_pattern:
+            print(f"🔄 Symbolic file detected, translated: '{pattern}' → '{search_pattern}'", file=sys.stderr)
+    else:
+        # Use original pattern for regular files
+        search_pattern = pattern
+        if show_translation and file_format == 'regular':
+            print(f"📝 Regular LoreToken file detected, searching as-is", file=sys.stderr)
+    
+    # Search the file
+    matches = []
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            for line_num, line in enumerate(f, 1):
+                # Try both patterns if translation occurred
+                if re.search(search_pattern, line, re.IGNORECASE):
+                    matches.append((line_num, line.strip()))
+                elif search_pattern != pattern and re.search(pattern, line, re.IGNORECASE):
+                    # Also match original pattern in case file has mixed formats
+                    matches.append((line_num, line.strip()))
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return []
+    
+    return matches
+
+def main():
+    if len(sys.argv) < 3:
+        print("Usage: sgrep <pattern> <file>")
+        print("Examples:")
+        print("  sgrep BTC-USD /path/to/data.loretoken")
+        print("  sgrep 'BTC.*117391' /path/to/data.loretoken")
+        print("  sgrep ACTIVE /path/to/data.loretoken")
+        sys.exit(1)
+    
+    pattern = sys.argv[1]
+    file_path = sys.argv[2]
+    
+    # Check for debug flag
+    show_translation = '-v' in sys.argv or '--verbose' in sys.argv
+    
+    matches = sgrep(pattern, file_path, show_translation)
+    
+    for line_num, line in matches:
+        print(f"{line_num}:{line}")
+    
+    if show_translation and matches:
+        print(f"\n📊 Found {len(matches)} matches", file=sys.stderr)
+
+if __name__ == "__main__":
+    main()

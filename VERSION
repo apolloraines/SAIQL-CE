@@ -1,0 +1,14 @@
+SAIQL Version: 2.0.1-dev
+Date: 2025-01-11
+Source: SAIQL
+Status: Development Version with System Updates
+Files: 73
+Size: ~53MB
+
+Notes:
+- Updated with improvements from system installation
+- Added loretoken_converter.py for format conversion
+- Added saiql_wrapper.py for system integration
+- Fixed relative imports in core modules
+- Generic version without domain-specific features
+- Compatible with system SAIQL installation

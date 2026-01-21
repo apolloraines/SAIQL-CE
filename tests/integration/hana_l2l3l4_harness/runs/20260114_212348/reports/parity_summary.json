@@ -1,0 +1,18 @@
+{
+  "run_id": "20260114_212348",
+  "l2_views": {
+    "migrated": 4,
+    "skipped": 0,
+    "parity": "FULL"
+  },
+  "l3_routines": {
+    "migrated": 7,
+    "skipped": 0,
+    "parity": "FULL"
+  },
+  "l4_triggers": {
+    "migrated": 0,
+    "skipped": 3,
+    "parity": "PARTIAL (subset only)"
+  }
+}

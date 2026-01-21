@@ -1,0 +1,47 @@
+{
+  "SAIQL_LEGEND": {
+    "families": {
+      "ASTERISK_FAMILY": {
+        "symbols": {
+          "*3": {
+            "semantic": "selectFunction",
+            "sql_hint": "SELECT",
+            "type": "function"
+          },
+          "*COUNT": {
+            "semantic": "countFunction",
+            "sql_hint": "COUNT",
+            "type": "function"
+          }
+        }
+      },
+      "CIRCLE_FAMILY": {
+        "symbols": {
+          "oQ": {
+            "semantic": "queryResult",
+            "sql_hint": "result",
+            "type": "output"
+          }
+        }
+      },
+      "EQUALS_FAMILY": {
+        "symbols": {
+          "=J": {
+            "semantic": "innerJoin",
+            "sql_hint": "INNER JOIN",
+            "type": "join"
+          }
+        }
+      },
+      "DOLLAR_FAMILY": {
+        "symbols": {
+          "$1": {
+            "semantic": "beginTransaction",
+            "sql_hint": "BEGIN",
+            "type": "transaction"
+          }
+        }
+      }
+    }
+  }
+}
