@@ -1,4 +1,5 @@
-<img width="1036" height="399" alt="image" src="https://github.com/user-attachments/assets/e6dc8ba1-fe28-46fb-884c-4e1b43522441" />
+<img width="800" height="400" alt="image" src="https://github.com/user-attachments/assets/515259af-d28a-4a69-a834-f7fb7389b02e" />
+
 # SAIQL Community Edition
 
 **Semantic Artificial Intelligence Query Language**
