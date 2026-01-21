@@ -97,6 +97,7 @@ The **Community Edition (CE)** is the self-hosted, open version of SAIQL with ev
 - **QIPI-Lite**: SQLite FTS5-based text search
 
 ---
+![89aff70513c366c1178aa8451332f3e5](https://github.com/user-attachments/assets/de5a853c-789d-4405-b71f-0fc6c1c10b7a)
 
 ## Quick Start
 
