@@ -1,4 +1,5 @@
-<img width="1600" height="800" alt="image" src="https://github.com/user-attachments/assets/71c8292e-5dca-4e19-8912-545f9dcc2b18" />
+<img width="1517" height="352" alt="image" src="https://github.com/user-attachments/assets/e1fa7cea-a928-46b2-84da-ca8b986a21a1" />
+
 
 
 # SAIQL Community Edition
