@@ -99,7 +99,7 @@ Community Edition (Free)        Enterprise Cloud (Paid)
 1. CE builds community, trust, and adoption
 2. Developers learn SAIQL on CE, then need Enterprise features at scale
 3. Enterprise features are genuinely 10-100x better, not arbitrary paywalls
-4. Once SAIQL is in production, switching cost is high
+4. Once SAIQL is in production, switching is easy
 
 ---
 
@@ -121,20 +121,6 @@ SAIQL is **the only platform** that:
 - Includes a security firewall between AI and data
 - Compresses data specifically for GPU processing
 - Supports any backend while adding AI-native features on top
-
----
-
-## Traction & Validation
-
-*(Customize this section with actual metrics)*
-
-| Metric | Value |
-|--------|-------|
-| GitHub Stars | X |
-| Monthly Active Developers | X |
-| Enterprise Pilots | X |
-| Production Deployments | X |
-| Query Volume (monthly) | X |
 
 ---
 
@@ -231,7 +217,7 @@ This isn't a feature we'd bolt on—**the entire SAIQL architecture was designed
 
 ## Team
 
-*(Add team bios, relevant experience, prior exits)*
+*Apollo Raines - Larry Arnold*
 
 ---
 
@@ -242,18 +228,6 @@ This isn't a feature we'd bolt on—**the entire SAIQL architecture was designed
 | **Engineering (60%)** | Expand proprietary stack, enterprise features |
 | **Go-to-Market (25%)** | Developer relations, enterprise sales |
 | **Operations (15%)** | Infrastructure, compliance, support |
-
----
-
-## The Ask
-
-*(Customize with specific raise amount, terms, timeline)*
-
-SAIQL is raising $X to:
-- Expand the engineering team
-- Launch Enterprise Cloud GA
-- Build enterprise sales motion
-- Achieve SOC 2 / compliance certifications
 
 ---
 
@@ -274,6 +248,4 @@ SAIQL is raising $X to:
 
 ---
 
-*Contact: [Add contact information]*
-
-*Confidential — For qualified investors only*
+Apollo Raines - apollo@saiql.ai
