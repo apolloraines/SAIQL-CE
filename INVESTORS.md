@@ -67,10 +67,10 @@ Operations Director (via mobile):
 
 **Why this matters:**
 - Companies don't need AI expertise—they subscribe to ours
-- We become the brain that controls their entire operation
+- We become the brain that gives them better control of their entire operation
 - Multi-interface access (GUI/browser/CLI) fits any workflow
 - Role-based permissions make it enterprise-ready from day one
-- Once Copilot controls their systems, switching cost is enormous
+- The service becomes so personalized and valuable, they won't want to leave
 
 **Third-party access:** Contract companies (AI camera monitoring, managed security services, facilities management) can be granted routed access via CLI to a Copilot instance running on a server in the customer's data room. The service provider gets controlled access to the systems they manage—without the customer exposing raw infrastructure or building custom integrations.
 
@@ -115,7 +115,7 @@ These aren't features—they're **patents and trade secrets** that took years to
 | **LTGPU** | GPU acceleration | CUDA-native LoreToken processing |
 | **LTRAM** | Hot data store | Sub-millisecond access, deterministic eviction |
 
-**None of this exists elsewhere.** Oracle, AWS, and Microsoft would need years to replicate—and they're not even trying.
+**None of this exists elsewhere.** These technologies took years to develop and are purpose-built for AI workloads from the ground up.
 
 ---
 
@@ -141,7 +141,7 @@ Community Edition (Free)        Enterprise Cloud (Paid)
 1. CE builds community, trust, and adoption
 2. Corporate developers learn SAIQL on CE, then need Enterprise features at scale
 3. Enterprise features are genuinely 10-100x better, not arbitrary paywalls
-4. Once SAIQL is in production, switching cost is high
+4. Once teams experience the workflow, they become advocates
 
 ---
 
@@ -255,12 +255,12 @@ SAIQL Copilot:
 | **Anomaly Detection** | "Alert me if order volume drops 20% from baseline" |
 | **Compliance Reports** | "Generate a GDPR data inventory for user PII" |
 
-### Why This Locks In Customers
+### Why Customers Stay
 
 1. **Personalization compounds** — The more they use it, the better it knows their data
 2. **Institutional knowledge** — Copilot learns their patterns, preferences, naming conventions
-3. **Switching cost** — Moving to another DB means losing their trained assistant
-4. **Upsell path** — Free tier gets basic Copilot, Enterprise gets full capabilities
+3. **It becomes indispensable** — Like a team member who knows everything about your systems
+4. **Growth path** — Free tier gets basic Copilot, Enterprise unlocks full capabilities
 
 ### Technical Foundation Already Exists
 
