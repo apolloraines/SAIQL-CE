@@ -97,7 +97,7 @@ Community Edition (Free)        Enterprise Cloud (Paid)
 
 **Why this works:**
 1. CE builds community, trust, and adoption
-2. Developers learn SAIQL on CE, then need Enterprise features at scale
+2. Corporate developers learn SAIQL on CE, then need Enterprise features at scale
 3. Enterprise features are genuinely 10-100x better, not arbitrary paywalls
 4. Once SAIQL is in production, switching cost is high
 
