@@ -285,7 +285,11 @@ For database conversion guarantees and limitations, see [DISCLAIMER.md](DISCLAIM
 
 **Atlas** *(proprietary)* — Semantic RAG with three retrieval lanes (metadata, BM25 lexical, vector), safety matrix, grounding enforcement, and proof bundles for compliance.
 
-**LoreToken** *(proprietary)* — Three format specifications for different efficiency/readability trade-offs: Symbolic (2.6x compression), Standard (1.5x), Ultra (human-readable). Data compressed via LoreToken before GPU processing uses up to 70% less compute.
+**LoreToken™** *(proprietary)* — Three format specifications for different efficiency/readability trade-offs: Symbolic (2.6x compression), Standard (1.5x), Ultra (human-readable). Data compressed via LoreToken before GPU processing uses up to 70% less compute.
+
+**LTGPU** *(proprietary)* — GPU-accelerated LoreToken processing using CUDA. Offloads compression, decompression, and tensor operations to GPU hardware—using up to 70% less compute for high-throughput AI workloads.
+
+**LTRAM** *(proprietary)* — In-memory LoreToken store for hot data. Sub-millisecond access with configurable size caps and deterministic eviction. Bridges the gap between Lorecore persistence and GPU memory.
 
 
 
