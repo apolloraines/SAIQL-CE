@@ -74,7 +74,9 @@ Operations Director (via mobile):
 
 **Third-party access:** Contract companies (AI camera monitoring, managed security services, facilities management) can be granted routed access via CLI to a Copilot instance running on a server in the customer's data room. The service provider gets controlled access to the systems they manage—without the customer exposing raw infrastructure or building custom integrations.
 
-**The business model shift:** We're not just selling database infrastructure. We're selling the AI layer that runs their business—with SAIQL as the secure, grounded foundation underneath.
+**The business model shift:** We're not just selling database infrastructure. We're selling the AI layer that helps them run their business easier—with SAIQL as the secure, grounded foundation underneath.
+
+SAIQL Copilot becomes the AI that large businesses can trust—instead of employees accessing random online AI services and leaking company data. One secure, grounded assistant that knows the business: automatically clocking in employees when they arrive (via mobile app), helping office staff draft emails to customers, automating supply reorders, saving energy by powering down unused areas, granting third-party vendors scoped access to security systems. Copilot handles the mundane so teams can focus on what matters—all without sensitive data ever leaving the company's infrastructure.
 
 ---
 
