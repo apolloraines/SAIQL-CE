@@ -156,6 +156,7 @@ Results are sorted by `(-score, chunk_id)` for deterministic ordering.
 | **Safety scanning** | Basic | Advanced (redaction, quarantine) |
 | **Proof bundles** | Partial | Full audit trail |
 | **Confidence thresholds** | Not enforced | Configurable minimums |
+| **Serialization** | LoreToken-Lite | LoreToken™ (3 formats: Symbolic, Standard, Ultra) |
 
 ---
 
