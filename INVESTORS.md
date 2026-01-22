@@ -173,18 +173,6 @@ The "AI-native database" category barely exists yet. SAIQL is defining it.
 
 ---
 
-## The Ask
-
-*(Customize with specific raise amount, terms, timeline)*
-
-SAIQL is raising $X to:
-- Expand the engineering team
-- Launch Enterprise Cloud GA
-- Build enterprise sales motion
-- Achieve SOC 2 / compliance certifications
-
----
-
 ## Summary
 
 | Point | Detail |
