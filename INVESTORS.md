@@ -190,6 +190,4 @@ The "AI-native database" category barely exists yet. SAIQL is defining it.
 
 ---
 
-*Contact: [Add contact information]*
-
-*Confidential — For qualified investors only*
+Apollo Raines - apollo@saiql.ai
