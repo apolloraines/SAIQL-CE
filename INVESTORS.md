@@ -171,6 +171,64 @@ The "AI-native database" category barely exists yet. SAIQL is defining it.
 
 ---
 
+## Roadmap: SAIQL Copilot
+
+With proper funding, SAIQL Cloud will include a **built-in AI assistant** that goes far beyond generic chatbots:
+
+### What Makes It Different
+
+| Generic AI Assistants | SAIQL Copilot |
+|----------------------|---------------|
+| No knowledge of your data | **Knows your schema, tables, and relationships** |
+| Generic responses | **Calls you by name, knows your customer ID** |
+| Can't execute anything | **Executes queries, migrations, optimizations** |
+| Hallucinates about your DB | **Grounded in your actual data via Atlas** |
+| Security afterthought | **Runs inside SAIQL's semantic firewall** |
+
+### What It Can Do
+
+```
+"Hey SAIQL, show me our top 10 customers by revenue this quarter"
+     ↓
+SAIQL Copilot:
+- Knows your schema (customers, orders, revenue tables)
+- Generates validated SAIQL query
+- Executes through semantic firewall
+- Returns results with citations
+- Suggests follow-up analyses
+```
+
+### Enterprise Use Cases
+
+| Capability | Example |
+|------------|---------|
+| **Natural Language Queries** | "Find all users who signed up last week but haven't made a purchase" |
+| **Schema Design** | "Help me design a table for tracking subscription events" |
+| **Migration Assistance** | "Move this PostgreSQL schema to MySQL and show me the diffs" |
+| **Performance Tuning** | "Why is this query slow? Suggest optimizations" |
+| **Anomaly Detection** | "Alert me if order volume drops 20% from baseline" |
+| **Compliance Reports** | "Generate a GDPR data inventory for user PII" |
+
+### Why This Locks In Customers
+
+1. **Personalization compounds** — The more they use it, the better it knows their data
+2. **Institutional knowledge** — Copilot learns their patterns, preferences, naming conventions
+3. **Switching cost** — Moving to another DB means losing their trained assistant
+4. **Upsell path** — Free tier gets basic Copilot, Enterprise gets full capabilities
+
+### Technical Foundation Already Exists
+
+| Component | Role in Copilot |
+|-----------|-----------------|
+| **Atlas** | Grounds responses in actual data |
+| **Semantic Firewall** | Prevents injection, enforces permissions |
+| **LoreToken™** | Compresses context for efficient inference |
+| **LTGPU** | Fast inference on customer's data patterns |
+
+This isn't a feature we'd bolt on—**the entire SAIQL architecture was designed to make this possible.**
+
+---
+
 ## Team
 
 *(Add team bios, relevant experience, prior exits)*
