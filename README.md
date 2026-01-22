@@ -1,8 +1,11 @@
-<img width="1036" height="399" alt="image" src="https://github.com/user-attachments/assets/e6dc8ba1-fe28-46fb-884c-4e1b43522441" />
+<img width="1517" height="352" alt="image" src="https://github.com/user-attachments/assets/e1fa7cea-a928-46b2-84da-ca8b986a21a1" />
+
+
+
+
 # SAIQL Community Edition
 
-**Semantic Artificial Intelligence Query Language**
-*A Database System Built for AI*
+**Semantic Artificial Intelligence Query Language - A Database System Built for AI**
 
 [![License](https://img.shields.io/badge/license-OLL--CE-blue.svg)](LICENSE.md)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
@@ -40,7 +43,7 @@ SAIQL provides a **semantic firewall** between AI and your data:
 - **Symbolic Syntax**: Compact, unambiguous format that AI models can reliably generate
 - **Semantic Validation**: Queries are validated against schema and security rules before execution
 - **Database Agnostic**: AI doesn't need to know if it's talking to PostgreSQL or SQLite
-- **Grounded Responses**: Query results can be validated and cited (Full Edition)
+- **Grounded Responses**: Query results can be validated and cited (Enterprise)
 
 Example — an AI agent querying user data:
 ```
@@ -95,6 +98,7 @@ The **Community Edition (CE)** is the self-hosted, open version of SAIQL with ev
 - **QIPI-Lite**: SQLite FTS5-based text search
 
 ---
+![89aff70513c366c1178aa8451332f3e5](https://github.com/user-attachments/assets/de5a853c-789d-4405-b71f-0fc6c1c10b7a)
 
 ## Quick Start
 
@@ -209,14 +213,14 @@ SAIQL is licensed under the Open Lore License (OLL). See [LICENSE.md](LICENSE.md
 
 ---
 
-## Community Edition vs Full Edition
+## Community Edition vs Enterprise Cloud
 
 <table>
 <thead>
 <tr>
 <th width="18%">Feature</th>
 <th width="41%">Community Edition</th>
-<th width="41%">Full Edition</th>
+<th width="41%">Enterprise Cloud</th>
 </tr>
 </thead>
 <tbody>
@@ -268,7 +272,7 @@ SAIQL is licensed under the Open Lore License (OLL). See [LICENSE.md](LICENSE.md
 </tbody>
 </table>
 
-### Full Edition Highlights (Proprietary)
+### Enterprise Highlights (Proprietary)
 
 **QIPI** *(proprietary)* — High-speed indexing that beats B-trees on 4/5 operations. 10x faster on hot data.
 
