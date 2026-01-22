@@ -255,6 +255,8 @@ SAIQL Copilot uses **Rolling Context** with tiered memory:
 | **Warm** | Recent interactions, frequently-used schemas | Sub-second (LTRAM) | Days/weeks |
 | **Cold** | Full conversation history, all past queries, audit logs | Milliseconds (Atlas RAG) | Forever |
 
+**Why this is possible:** Everything is stored using LoreToken™ compression—and critically, models can process LoreToken data *in its compressed state*. No decompression overhead. This means months of conversation history, thousands of queries, and complete audit trails can fit in a few hundred kilobytes. LoreToken™ is the foundation all of SAIQL's technology is built on.
+
 **How it works:**
 
 ```
