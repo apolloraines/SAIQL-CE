@@ -14,11 +14,12 @@
 
 ## About SAIQL
 
-**SAIQL** (Semantic Artificial Intelligence Query Language) is a database system designed for AI from the ground up. It's three things:
+**SAIQL** (Semantic Artificial Intelligence Query Language) is a database system designed for AI from the ground up. It's four things:
 
 - **A Transpiler** — Symbolic queries → validated → native SQL for any backend
 - **A Converter** — Move schemas and queries between databases with controlled diffs
 - **A Database Engine** — SAIQL's own IR and execution path for AI-native speed
+- **A Semantic RAG** — Hybrid retrieval (metadata + BM25 + vector) with grounded, citable responses
 
 ***CE defaults to SQLite as its backend. Enterprise uses Lorecore, our AI-native storage engine.***
 
