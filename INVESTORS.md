@@ -124,20 +124,6 @@ SAIQL is **the only platform** that:
 
 ---
 
-## Traction & Validation
-
-*(Customize this section with actual metrics)*
-
-| Metric | Value |
-|--------|-------|
-| GitHub Stars | X |
-| Monthly Active Developers | X |
-| Enterprise Pilots | X |
-| Production Deployments | X |
-| Query Volume (monthly) | X |
-
----
-
 ## The AI Database Market
 
 Every AI application needs:
