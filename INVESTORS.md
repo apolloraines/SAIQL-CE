@@ -243,6 +243,38 @@ SAIQL Copilot:
 | **LoreToken™** | Compresses context for efficient inference |
 | **LTGPU** | Fast inference on customer's data patterns |
 
+### Rolling Context: Infinite Memory
+
+Traditional AI assistants hit context limits—they forget earlier conversations, lose track of past decisions, and can't reference historical data without expensive re-processing.
+
+SAIQL Copilot uses **Rolling Context** with tiered memory:
+
+| Tier | What's Stored | Access Speed | Retention |
+|------|---------------|--------------|-----------|
+| **Hot** | Active context window | Instant | Current session |
+| **Warm** | Recent interactions, frequently-used schemas | Sub-second (LTRAM) | Days/weeks |
+| **Cold** | Full conversation history, all past queries, audit logs | Milliseconds (Atlas RAG) | Forever |
+
+**How it works:**
+
+```
+User: "What was that query we ran last month for the finance team?"
+     ↓
+Rolling Context:
+1. Not in hot context (current session)
+2. Checks warm tier → partial match found
+3. Retrieves full context from cold storage via Atlas
+4. Rolls relevant history back into active context
+     ↓
+Copilot: "You ran this query on Dec 15th for Sarah in Finance:
+         *[transactions]::sum(amount)|dept='finance'|date>2024-11-01>>oQ
+         Want me to run an updated version?"
+```
+
+**The result:** SAIQL Copilot remembers everything—every query, every conversation, every decision—without bloating the context window or hitting token limits. The Semantic RAG (Atlas) was built specifically to enable this.
+
+---
+
 This isn't a feature we'd bolt on—**the entire SAIQL architecture was designed to make this possible.**
 
 ---
