@@ -5,7 +5,7 @@
 
 # SAIQL Community Edition
 
-**Semantic Artificial Intelligence Query Language - A Powerful & Fast Database Engine Built for AI from the ground up**
+**Semantic Artificial Intelligence Query Language - A Database System Built for AI**
 
 [![License](https://img.shields.io/badge/license-OLL--CE-blue.svg)](LICENSE.md)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
@@ -19,7 +19,7 @@
 - **A Transpiler** — Symbolic queries → validated → native SQL for any backend
 - **A Converter** — Move schemas and queries between databases with controlled diffs
 - **A Database Engine** — SAIQL's own IR and execution path for AI-native speed
-- **A Semantic RAG** — Hybrid retrieval with grounded, citable responses
+- **[A Semantic RAG](Semantic_RAG.md)** — Hybrid retrieval (metadata + BM25 + vector) with grounded, citable responses
 
 ***CE defaults to SQLite as its backend. Enterprise uses Lorecore, our AI-native storage engine.***
 
