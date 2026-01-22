@@ -72,6 +72,8 @@ Operations Director (via mobile):
 - Role-based permissions make it enterprise-ready from day one
 - Once Copilot controls their systems, switching cost is enormous
 
+**Third-party access:** Contract companies (AI camera monitoring, managed security services, facilities management) can be granted routed access via CLI to a Copilot instance running on a server in the customer's data room. The service provider gets controlled access to the systems they manage—without the customer exposing raw infrastructure or building custom integrations.
+
 **The business model shift:** We're not just selling database infrastructure. We're selling the AI layer that runs their business—with SAIQL as the secure, grounded foundation underneath.
 
 ---
