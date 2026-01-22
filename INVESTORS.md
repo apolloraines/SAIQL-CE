@@ -159,7 +159,7 @@ The "AI-native database" category barely exists yet. SAIQL is defining it.
 
 ## Team
 
-*(Add team bios, relevant experience, prior exits)*
+*Apollo Raines - Larry Arnold*
 
 ---
 
