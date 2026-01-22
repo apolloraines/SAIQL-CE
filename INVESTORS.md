@@ -317,5 +317,3 @@ This isn't a feature we'd bolt on—**the entire SAIQL architecture was designed
 ---
 
 *Contact: Apollo Raines — apollo@saiql.ai*
-
-*Confidential — For qualified investors only*
