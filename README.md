@@ -199,6 +199,8 @@ Each adapter supports L0-L1 migration levels (Data + Schema):
 | MySQL / MariaDB | Complete | Wide compatibility |
 | CSV / Excel | Complete | File-based data import |
 
+> **Source Database Protection**: During all conversion and migration operations, SAIQL operates in read-only mode on your source database. Your original data is never modified. See [DISCLAIMER.md](DISCLAIMER.md) for full details on conversion guarantees and limitations.
+
 ---
 
 ## Contributing
@@ -207,9 +209,11 @@ We welcome contributions. Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
-## License
+## License & Legal
 
 SAIQL is licensed under the Open Lore License (OLL). See [LICENSE.md](LICENSE.md).
+
+For database conversion guarantees and limitations, see [DISCLAIMER.md](DISCLAIMER.md).
 
 ---
 
