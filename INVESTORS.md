@@ -281,7 +281,9 @@ This isn't a feature we'd bolt on—**the entire SAIQL architecture was designed
 
 ## Team
 
-*(Add team bios, relevant experience, prior exits)*
+**Apollo Raines** — Founder & CEO
+
+**Larry Arnold** — Co-Founder
 
 ---
 
@@ -292,18 +294,6 @@ This isn't a feature we'd bolt on—**the entire SAIQL architecture was designed
 | **Engineering (60%)** | Expand proprietary stack, enterprise features |
 | **Go-to-Market (25%)** | Developer relations, enterprise sales |
 | **Operations (15%)** | Infrastructure, compliance, support |
-
----
-
-## The Ask
-
-*(Customize with specific raise amount, terms, timeline)*
-
-SAIQL is raising $X to:
-- Expand the engineering team
-- Launch Enterprise Cloud GA
-- Build enterprise sales motion
-- Achieve SOC 2 / compliance certifications
 
 ---
 
@@ -324,6 +314,6 @@ SAIQL is raising $X to:
 
 ---
 
-*Contact: [Add contact information]*
+*Contact: Apollo Raines — apollo@saiql.ai*
 
 *Confidential — For qualified investors only*
