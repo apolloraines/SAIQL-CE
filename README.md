@@ -1,11 +1,8 @@
-<img width="1517" height="352" alt="image" src="https://github.com/user-attachments/assets/e1fa7cea-a928-46b2-84da-ca8b986a21a1" />
-
-
-
-
+<img width="1036" height="399" alt="image" src="https://github.com/user-attachments/assets/e6dc8ba1-fe28-46fb-884c-4e1b43522441" />
 # SAIQL Community Edition
 
-**Semantic Artificial Intelligence Query Language - A Database System Built for AI**
+**Semantic Artificial Intelligence Query Language**
+*A Database System Built for AI*
 
 [![License](https://img.shields.io/badge/license-OLL--CE-blue.svg)](LICENSE.md)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
@@ -14,12 +11,11 @@
 
 ## About SAIQL
 
-**SAIQL** (Semantic Artificial Intelligence Query Language) is a database system designed for AI from the ground up. It's four things:
+**SAIQL** (Semantic Artificial Intelligence Query Language) is a database system designed for AI from the ground up. It's three things:
 
 - **A Transpiler** — Symbolic queries → validated → native SQL for any backend
 - **A Converter** — Move schemas and queries between databases with controlled diffs
 - **A Database Engine** — SAIQL's own IR and execution path for AI-native speed
-- **[A Semantic RAG](Semantic_RAG.md)** — Hybrid retrieval (metadata + BM25 + vector) with grounded, citable responses
 
 ***CE defaults to SQLite as its backend. Enterprise uses Lorecore, our AI-native storage engine.***
 
@@ -44,7 +40,7 @@ SAIQL provides a **semantic firewall** between AI and your data:
 - **Symbolic Syntax**: Compact, unambiguous format that AI models can reliably generate
 - **Semantic Validation**: Queries are validated against schema and security rules before execution
 - **Database Agnostic**: AI doesn't need to know if it's talking to PostgreSQL or SQLite
-- **Grounded Responses**: Query results can be validated and cited (Enterprise)
+- **Grounded Responses**: Query results can be validated and cited (Full Edition)
 
 Example — an AI agent querying user data:
 ```
@@ -99,7 +95,6 @@ The **Community Edition (CE)** is the self-hosted, open version of SAIQL with ev
 - **QIPI-Lite**: SQLite FTS5-based text search
 
 ---
-![89aff70513c366c1178aa8451332f3e5](https://github.com/user-attachments/assets/de5a853c-789d-4405-b71f-0fc6c1c10b7a)
 
 ## Quick Start
 
@@ -147,6 +142,20 @@ python saiql.py --query "*[users]::*>>oQ"
 # Show statistics
 python saiql.py --stats
 ```
+
+### GUI Control Panel
+
+A basic tkinter GUI is included for Windows and Linux:
+
+```bash
+# Windows
+python gui\windows\saiql_gui.py
+
+# Linux
+python gui/linux/saiql_linux.py
+```
+
+> **Note:** The current GUI is a placeholder with limited functionality. A full-featured GUI Control Panel with modern UI/UX is on the roadmap.
 
 ---
 
@@ -200,8 +209,6 @@ Each adapter supports L0-L1 migration levels (Data + Schema):
 | MySQL / MariaDB | Complete | Wide compatibility |
 | CSV / Excel | Complete | File-based data import |
 
-> **Source Database Protection**: During all conversion and migration operations, SAIQL operates in read-only mode on your source database. Your original data is never modified. See [DISCLAIMER.md](DISCLAIMER.md) for full details on conversion guarantees and limitations.
-
 ---
 
 ## Contributing
@@ -210,22 +217,20 @@ We welcome contributions. Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
-## License & Legal
+## License
 
 SAIQL is licensed under the Open Lore License (OLL). See [LICENSE.md](LICENSE.md).
 
-For database conversion guarantees and limitations, see [DISCLAIMER.md](DISCLAIMER.md).
-
 ---
 
-## Community Edition vs Enterprise Cloud
+## Community Edition vs Full Edition
 
 <table>
 <thead>
 <tr>
 <th width="18%">Feature</th>
 <th width="41%">Community Edition</th>
-<th width="41%">Enterprise Cloud</th>
+<th width="41%">Full Edition</th>
 </tr>
 </thead>
 <tbody>
@@ -261,12 +266,12 @@ For database conversion guarantees and limitations, see [DISCLAIMER.md](DISCLAIM
 </tr>
 <tr>
 <td><strong>RAG</strong></td>
-<td>Atlas CE</td>
+<td>Atlas CE (Coming Soon)</td>
 <td>Atlas Semantic RAG</td>
 </tr>
 <tr>
 <td><strong>Grounding</strong></td>
-<td>CE Mode</td>
+<td>CE Mode (Coming Soon)</td>
 <td>Enterprise Mode (citation enforcement, confidence thresholds)</td>
 </tr>
 <tr>
@@ -277,7 +282,7 @@ For database conversion guarantees and limitations, see [DISCLAIMER.md](DISCLAIM
 </tbody>
 </table>
 
-### Enterprise Highlights (Proprietary)
+### Full Edition Highlights (Proprietary)
 
 **QIPI** *(proprietary)* — High-speed indexing that beats B-trees on 4/5 operations. 10x faster on hot data.
 
@@ -285,11 +290,7 @@ For database conversion guarantees and limitations, see [DISCLAIMER.md](DISCLAIM
 
 **Atlas** *(proprietary)* — Semantic RAG with three retrieval lanes (metadata, BM25 lexical, vector), safety matrix, grounding enforcement, and proof bundles for compliance.
 
-**LoreToken™** *(proprietary)* — Three format specifications for different efficiency/readability trade-offs: Symbolic (2.6x compression), Standard (1.5x), Ultra (human-readable). Data compressed via LoreToken before GPU processing uses up to 70% less compute.
-
-**LTGPU** *(proprietary)* — GPU-accelerated LoreToken processing using CUDA. Offloads compression, decompression, and tensor operations to GPU hardware—using up to 70% less compute for high-throughput AI workloads.
-
-**LTRAM** *(proprietary)* — In-memory LoreToken store for hot data. Sub-millisecond access with configurable size caps and deterministic eviction. Bridges the gap between Lorecore persistence and GPU memory.
+**LoreToken** *(proprietary)* — Three format specifications for different efficiency/readability trade-offs: Symbolic (2.6x compression), Standard (1.5x), Ultra (human-readable). Data compressed via LoreToken before GPU processing uses up to 70% less compute.
 
 
 
