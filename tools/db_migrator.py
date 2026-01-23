@@ -253,9 +253,9 @@ class DBMigrator:
         elif 'sqlite' in self.source_type:
             try:
                 import sqlite3
-                self.source_conn = sqlite3.connect(
-                    self.parsed_source.path.replace('//', '/')
-                )
+                from pathlib import Path
+                db_path = Path(self.parsed_source.path.replace('//', '/')).resolve()
+                self.source_conn = sqlite3.connect(str(db_path))
                 logger.info("Connected to SQLite source")
             except Exception as e:
                 logger.error(f"Failed to connect to source: {self._sanitize_error(e)}")
@@ -725,8 +725,6 @@ class DBMigrator:
              verify_res = self.db_manager.execute_query(verify_sql, backend="target")
              logger.info(f"DEBUG: Verification query result for {table_name}: {verify_res.data}")
              
-             logger.info(f"DEBUG: Verification query result for {table_name}: {verify_res.data}")
-             
              # Debug current schema/db context
              target_type = self.target_config.get('type', 'sqlite')
              schema_sql = None
@@ -867,7 +865,7 @@ class DBMigrator:
                 sys.exit(1)
             else:
                 migrated_count += len(batch)
-                logger.info(f"Migrated rows {migrated_count - len(batch) + 1} to {migigated_count}")
+                logger.info(f"Migrated rows {migrated_count - len(batch) + 1} to {migrated_count}")
                 
                 # Update checkpoint
                 self.state["current_table"] = table_name
