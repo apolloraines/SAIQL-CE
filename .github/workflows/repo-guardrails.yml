@@ -1,0 +1,82 @@
+name: Repository Guardrails
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  check-repo-cleanliness:
+    runs-on: ubuntu-latest
+    name: Block Large Files & Forbidden Directories
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history to check all commits
+    
+    - name: Check for Large Files
+      run: |
+        echo "Checking for files >100MB..."
+        large_files=$(find . -type f -size +100M 2>/dev/null || true)
+        if [ -n "$large_files" ]; then
+          echo "❌ ERROR: Large files found (>100MB):"
+          echo "$large_files"
+          echo ""
+          echo "Large files should be hosted in GitHub Releases or external storage."
+          exit 1
+        fi
+        echo "✅ No large files found"
+    
+    - name: Check for Forbidden Directories
+      run: |
+        echo "Checking for forbidden directories..."
+        forbidden=$(git ls-files | egrep '^(venv/|\.venv/|__pycache__/|build/|dist/|\.egg-info/|node_modules/)' || true)
+        if [ -n "$forbidden" ]; then
+          echo "❌ ERROR: Forbidden directories are tracked:"
+          echo "$forbidden"
+          echo ""
+          echo "These should be in .gitignore, not committed."
+          exit 1
+        fi
+        echo "✅ No forbidden directories tracked"
+    
+    - name: Check for Binary Artifacts
+      run: |
+        echo "Checking for unwanted binary artifacts..."
+        binaries=$(git ls-files | egrep '\.(gguf|exe|zip|tar|bin|safetensors|db|sqlite)$' || true)
+        if [ -n "$binaries" ]; then
+          echo "❌ ERROR: Binary artifacts should not be tracked:"
+          echo "$binaries"
+          echo ""
+          echo "Move these to GitHub Releases."
+          exit 1
+        fi
+        echo "✅ No binary artifacts tracked"
+    
+    - name: Check for Python Cache
+      run: |
+        echo "Checking for Python cache files..."
+        pycache=$(git ls-files | egrep '(\.pyc$|\.pyo$|\.pyd$|__pycache__)' || true)
+        if [ -n "$pycache" ]; then
+          echo "❌ ERROR: Python cache files are tracked:"
+          echo "$pycache"
+          echo ""
+          echo "These should be in .gitignore."
+          exit 1
+        fi
+        echo "✅ No Python cache files tracked"
+    
+    - name: Repository Size Check
+      run: |
+        echo "Checking repository size..."
+        git_size=$(du -sm .git | cut -f1)
+        echo "Git directory size: ${git_size}MB"
+        
+        if [ "$git_size" -gt 100 ]; then
+          echo "⚠️  WARNING: Repository is getting large (${git_size}MB)"
+          echo "Consider using git filter-repo to remove large files from history."
+        else
+          echo "✅ Repository size is healthy (${git_size}MB)"
+        fi
