@@ -276,7 +276,7 @@ class SAIQLEngine:
         
         # Load secure configuration
         try:
-            from ..config.secure_config import get_config
+            from config.secure_config import get_config
             self.secure_config = get_config()
         except ImportError:
             # Fallback for standalone usage
@@ -352,8 +352,8 @@ class SAIQLEngine:
     def _load_config(self, config_path: Optional[str]) -> Dict[str, Any]:
         """Load engine configuration from secure_config"""
         try:
-            # Use centralized secure configuration (consistent relative import)
-            from ..config.secure_config import get_config
+            # Use centralized secure configuration
+            from config.secure_config import get_config
             secure_cfg = get_config()
             
             # Convert to dictionary format expected by engine

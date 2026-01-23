@@ -649,6 +649,11 @@ class SAIQLServer:
             self.db_manager.close_all()
             logger.info("Server shutdown complete")
 
+
+# Alias for backward compatibility with test scripts
+SecuredSAIQLServer = SAIQLServer
+
+
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(description='SAIQL Secured REST API Server')

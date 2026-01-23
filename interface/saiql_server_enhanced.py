@@ -45,12 +45,16 @@ sys.path.insert(0, str(project_root))
 
 # Import SAIQL components
 try:
-    from core.saiql_core import SAIQLParser, QueryComponents
+    from core.parser import SAIQLParser
     from core.symbolic_engine import SymbolicEngine, ExecutionResult, ExecutionStatus
     from security.auth_manager import AuthManager
+    # CE Edition: QueryComponents not available, use placeholder
+    QueryComponents = None
 except ImportError as e:
     logging.error(f"Failed to import SAIQL components: {e}")
-    sys.exit(1)
+    SAIQLParser = None
+    SymbolicEngine = None
+    QueryComponents = None
 
 # Configure logging
 logging.basicConfig(

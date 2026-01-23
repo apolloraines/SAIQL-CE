@@ -18,8 +18,7 @@ import argparse
 import json
 import logging
 
-from core.engine import SAIQLEngine
-from core.runtime import ExecutionContext
+from core.engine import SAIQLEngine, ExecutionContext
 from config.secure_config import get_config
 
 logger = logging.getLogger(__name__)
