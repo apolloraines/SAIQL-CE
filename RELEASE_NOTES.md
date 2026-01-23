@@ -9,7 +9,7 @@ This release marks the official Community Edition (CE) of SAIQL, providing a pro
 
 ### CE Features
 
-- **Core SAIQL Engine**: Unified query language across 10 database backends
+- **Core SAIQL Engine**: Unified query language across multiple database backends
 - **Semantic Firewall**: AI-native security layer blocking prompt injections
 - **Quality Mode (Grounding)**: Prevents hallucinations with evidence thresholds and citations
 - **LoreToken-Lite**: Lightweight canonical JSON serialization with SHA256 hashing

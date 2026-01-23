@@ -3,15 +3,19 @@
 SAIQL Database Migrator
 =======================
 
-A tool to migrate data from existing PostgreSQL/MySQL databases into SAIQL.
-This tool connects to a source database, introspects the schema, creates
-corresponding tables in SAIQL, and migrates the data.
+A tool to migrate data between databases using SAIQL.
 
-Supports migrating to:
-- SAIQL SQLite store (local)
-- SAIQL PostgreSQL backend
-- SAIQL MySQL backend
-- SAIQL DuckDB backend
+Community Edition (CE) Supported Databases:
+-------------------------------------------
+SOURCE: SQLite, PostgreSQL, MySQL/MariaDB, CSV/Excel
+TARGET: SQLite, PostgreSQL, MySQL/MariaDB
+
+Enterprise Edition Additional Support:
+--------------------------------------
+SOURCE: +Oracle, SQL Server (MSSQL), DuckDB, MongoDB, SAP HANA, etc.
+TARGET: +Oracle, SQL Server (MSSQL), DuckDB, etc.
+
+Note: Code for Enterprise databases exists but requires Enterprise license.
 
 Secured against SQL Injection and supports transactional checkpoints.
 
@@ -22,8 +26,8 @@ Usage:
     # Target local directory (Legacy SQLite mode)
     python3 tools/db_migrator.py --source "postgresql://user:pass@localhost/source_db" --target-dir "/path/to/saiql/data"
 
-Author: Gemini (acting as Claude)
-Version: 1.2.0
+Author: Apollo & Claude
+Version: 1.3.0
 """
 
 import argparse
