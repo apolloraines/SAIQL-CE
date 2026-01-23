@@ -201,15 +201,21 @@ class DBMigrator:
         """Connect to source database or file adapter"""
         logger.info(f"Connecting to source: {self.source_url}...")
         
-        if self.source_url.startswith('file://') or Path(self.source_url).is_dir() or (Path(self.source_url).exists() and Path(self.source_url).suffix in ['.csv', '.xlsx', '.xls']):
-             try:
-                 self.source_adapter = FileAdapter(self.source_url)
-                 self.source_adapter.connect()
-                 logger.info("Connected to File Source Adapter")
-                 return
-             except Exception as e:
-                 logger.error(f"Failed to connect to file source: {e}")
-                 sys.exit(1)
+        # Check if this is a filesystem path (not a database URL)
+        # Database URLs have schemes like: sqlite://, postgresql://, mysql://, etc.
+        is_db_url = self.source_type in ['sqlite', 'postgresql', 'postgres', 'mysql', 'oracle', 'mssql', 'duckdb']
+        
+        # Only check filesystem for non-database sources (files, directories, or file:// URLs)
+        if not is_db_url:
+            if self.source_url.startswith('file://') or Path(self.source_url).is_dir() or (Path(self.source_url).exists() and Path(self.source_url).suffix in ['.csv', '.xlsx', '.xls']):
+                try:
+                    self.source_adapter = FileAdapter(self.source_url)
+                    self.source_adapter.connect()
+                    logger.info("Connected to File Source Adapter")
+                    return
+                except Exception as e:
+                    logger.error(f"Failed to connect to file source: {e}")
+                    sys.exit(1)
 
         logger.info(f"Connecting to source database: {self.source_type}...")
     
@@ -258,7 +264,17 @@ class DBMigrator:
             try:
                 import sqlite3
                 from pathlib import Path
-                db_path = Path(self.parsed_source.path.replace('//', '/')).resolve()
+                import os
+                
+                # Get path from URL
+                db_path_str = self.parsed_source.path.replace('//', '/')
+                
+                # Windows fix: urlparse produces /C:/path for sqlite:///C:/path
+                # Strip leading slash if it's followed by a drive letter
+                if os.name == 'nt' and len(db_path_str) > 2 and db_path_str[0] == '/' and db_path_str[2] == ':':
+                    db_path_str = db_path_str[1:]  # Remove leading /
+                
+                db_path = Path(db_path_str).resolve()
                 self.source_conn = sqlite3.connect(str(db_path))
                 logger.info("Connected to SQLite source")
             except Exception as e:
