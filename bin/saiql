@@ -92,13 +92,64 @@ class SAIQL:
 
     @staticmethod
     def _parse_line(line):
-        """Parse a SAIQL line into a dict of fields."""
+        """Parse a SAIQL line into a dict of fields.
+
+        Supports quoted values for data containing spaces:
+            name>>"John Smith" age>>30
+
+        Escape quotes inside quoted values with backslash:
+            message>>"He said \\"hello\\""
+        """
         fields = {}
-        parts = line.replace('»', '>>').split()
-        for part in parts:
-            if '>>' in part:
-                key, value = part.split('>>', 1)
-                fields[key.lower()] = value
+        line = line.replace('»', '>>')
+
+        i = 0
+        n = len(line)
+
+        while i < n:
+            # Skip whitespace
+            while i < n and line[i] in ' \t':
+                i += 1
+            if i >= n:
+                break
+
+            # Find the >> delimiter
+            delim_pos = line.find('>>', i)
+            if delim_pos == -1:
+                break
+
+            key = line[i:delim_pos].strip().lower()
+            i = delim_pos + 2  # Skip >>
+
+            if i >= n:
+                fields[key] = ''
+                break
+
+            # Check if value is quoted
+            if line[i] == '"':
+                i += 1  # Skip opening quote
+                value_chars = []
+                while i < n:
+                    if line[i] == '\\' and i + 1 < n:
+                        # Escape sequence
+                        value_chars.append(line[i + 1])
+                        i += 2
+                    elif line[i] == '"':
+                        i += 1  # Skip closing quote
+                        break
+                    else:
+                        value_chars.append(line[i])
+                        i += 1
+                value = ''.join(value_chars)
+            else:
+                # Unquoted value - read until whitespace
+                start = i
+                while i < n and line[i] not in ' \t':
+                    i += 1
+                value = line[start:i]
+
+            fields[key] = value
+
         return fields
 
     @staticmethod
